@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import ImageTk, Image
 import os
 import subprocess
+import numpy as np
 
 def GUI():
     # Ventana y componentes
@@ -28,7 +29,7 @@ def GUI():
 
 
     #Imagen
-    originalimg = Image.open("narrador.jpg")
+    originalimg = Image.open("narrador.jpg").convert("L") #escala de grises
     originalImgTK = ImageTk.PhotoImage(originalimg)
 
     # Crear una etiqueta para mostrar la imagen en la ventana
@@ -45,9 +46,13 @@ def GUI():
             filas.pack(side=tk.TOP, padx=5, pady=5)
             for j in range(4):
                 bNumber = i * 4 + j + 1
-                button = tk.Button(filas, font=('Times New Roman', 11), text=str(bNumber))
-                # command=lambda num=bNumber: click(num)
+                button = tk.Button(filas, font=('Times New Roman', 11), text=str(bNumber),
+                                   command=lambda num=bNumber: click(num))
                 button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    def click(num):
+        print(num)
+
 
     # Llamar a la función para crear los botones en la posición deseada
     createButtons(ventana, x=550, y=225)
