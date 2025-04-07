@@ -6,23 +6,29 @@ import subprocess
 
 import tkinter as tk
 
-def create_buttons(ventana):
-    for i in range(4):
-        frame = tk.Frame(ventana)
-        frame.pack(side=tk.TOP, padx=5, pady=5)
-        for j in range(4):
-            button_number = i * 4 + j + 1
-            button = tk.Button(frame, font=('Times New Roman', 12), text=str(button_number))
-            button.pack(side=tk.LEFT, padx=5, pady=5)
+def GUI():
+    # Crear la ventana principal
+    ventana = tk.Tk()
+    ventana.title("Interpolación")
+    ventana.geometry("700x500")  # Ajustar el tamaño de la ventana si es necesario
+    ventana.resizable(None, None)
 
-# Crear la ventana principal
-ventana = tk.Tk()
-ventana.title("16 Botones en Tkinter")
-ventana.geometry("500x300")
-ventana.resizable(False, False)
+    def create_buttons(ventana, x, y):
+        botones = tk.Frame(ventana)
+        botones.place(x=x, y=y)  # Colocar el frame en la posición especificada
+        for i in range(4):
+            filas = tk.Frame(botones)
+            filas.pack(side=tk.TOP, padx=5, pady=5)
+            for j in range(4):
+                bNumber = i * 4 + j + 1
+                button = tk.Button(filas, font=('Times New Roman', 12), text=str(bNumber))
+                # command=lambda num=bNumber: click(num)
+                button.pack(side=tk.LEFT, padx=5, pady=5)
 
-# Llamar a la función para crear los botones
-create_buttons(ventana)
+    # Llamar a la función para crear los botones en la posición deseada
+    create_buttons(ventana, x=510, y=100)
 
-# Ejecutar el bucle principal de Tkinter
-ventana.mainloop()
+
+    # Ejecutar el bucle principal de Tkinter
+    ventana.mainloop()
+GUI()
