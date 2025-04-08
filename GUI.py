@@ -4,6 +4,33 @@ import os
 import subprocess
 import numpy as np
 
+IMAGE_WIDTH = 390
+IMAGE_HEIGHT = 390
+GRID_SIZE = 4  # 4x4 = 16 cuadrantes
+IMAGE_PATH = "narrador.jpg"
+IMG_OUT_PATH = "cuadrante.img"
+JPG_OUT_PATH = "cuadrante.jpg"
+
+def extraerCuadrante(img_array, quadrant_num):
+    row = (quadrant_num - 1) // GRID_SIZE
+    col = (quadrant_num - 1) % GRID_SIZE
+
+    quad_h = IMAGE_HEIGHT // GRID_SIZE
+    quad_w = IMAGE_WIDTH // GRID_SIZE
+
+    start_y = row * quad_h
+    end_y = start_y + quad_h
+    start_x = col * quad_w
+    end_x = start_x + quad_w
+
+    return img_array[start_y:end_y, start_x:end_x]
+
+def guardarImg(cuadrante_array, path):
+    cuadrante_array.astype(np.uint8).tofile(path)
+
+def cargarImg(path, shape):
+    return np.fromfile(path, dtype=np.uint8).reshape(shape)
+
 def GUI():
     # Ventana y componentes
     ventana = tk.Tk()
@@ -29,13 +56,31 @@ def GUI():
 
 
     #Imagen
-    originalimg = Image.open("narrador.jpg").convert("L") #escala de grises
+    originalimg = Image.open(IMAGE_PATH).convert("L") #escala de grises
+    originalArray = np.array(originalimg)
     originalImgTK = ImageTk.PhotoImage(originalimg)
 
     # Crear una etiqueta para mostrar la imagen en la ventana
     originalLabel = tk.Label(ventana, image=originalImgTK)
     originalLabel.place(x=75, y=200)
 
+    # Área para la imagen del cuadrante seleccionado
+    cuadranteLabel = tk.Label(ventana)
+    cuadranteLabel.place(x=900, y=200)
+
+    def mostrarCuadrante(num):
+        cuadrante = extraerCuadrante(originalArray, num)
+        guardarImg(cuadrante, IMG_OUT_PATH)
+
+
+        # Volver a cargar desde .img
+        cargado = cargarImg(IMG_OUT_PATH, cuadrante.shape)
+        img_pil = Image.fromarray(cargado, mode='L')
+        img_pil.save(JPG_OUT_PATH)
+
+        cuadrante_tk = ImageTk.PhotoImage(img_pil)
+        cuadranteLabel.config(image=cuadrante_tk)
+        cuadranteLabel.image = cuadrante_tk  # Evita que se borre de memoria
 
     def createButtons(ventana, x, y):
         botones = tk.Frame(ventana)
@@ -47,16 +92,11 @@ def GUI():
             for j in range(4):
                 bNumber = i * 4 + j + 1
                 button = tk.Button(filas, font=('Times New Roman', 11), text=str(bNumber),
-                                   command=lambda num=bNumber: click(num))
+                                   command=lambda num=bNumber: mostrarCuadrante(num))
                 button.pack(side=tk.LEFT, padx=5, pady=5)
-
-    def click(num):
-        print(num)
-
 
     # Llamar a la función para crear los botones en la posición deseada
     createButtons(ventana, x=550, y=225)
-
 
     # Ejecutar el bucle principal de Tkinter
     ventana.mainloop()
