@@ -46,11 +46,11 @@ read_infile:
 
     ; Leer contenido
     mov rax, 0               ; sys_read
-    mov rdi, [fd_in]         ; file descriptor
-    lea rsi, [inputBuffer]     ; buffer de destino
-    mov rdx, IN_IMG         ; bytes a leer
+    mov rdi, [fd_in]         
+    lea rsi, [inputBuffer]   ; buffer de destino
+    mov rdx, IN_IMG          ; bytes a leer
     syscall
-    cmp rax, IN_IMG         ; verificar tamaño
+    cmp rax, IN_IMG          ; verificar tamaño
     jne size_error_exit
 
     ; Cerrar archivo

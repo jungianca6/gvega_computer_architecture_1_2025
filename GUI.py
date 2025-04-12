@@ -54,9 +54,9 @@ def GUI():
         '''
         # Ejecutar ensamblador para interpolar el .img
         try:
-            subprocess.run(["nasm", "-felf64", "-o", "bilinear.o", "bilinear.asm"], check=True)
-            subprocess.run(["ld", "-o", "bilinear", "bilinear.o"], check=True)
-            subprocess.run(["./bilinear"], check=True)
+            subprocess.run(["nasm", "-felf64", "-o", "InterpolacionBilineal.o", "InterpolacionBilineal.asm"], check=True)
+            subprocess.run(["ld", "-o", "InterpolacionBilineal", "InterpolacionBilineal.o"], check=True)
+            subprocess.run(["./InterpolacionBilineal"], check=True)
         except subprocess.CalledProcessError as e:
             print(f"Error al ejecutar el ensamblador: {e}")
             return
