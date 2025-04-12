@@ -1,10 +1,8 @@
-import tkinter as tk
-from PIL import ImageTk, Image
 import numpy as np
 
 
-IMAGE_WIDTH = 390
-IMAGE_HEIGHT = 390
+IMAGE_WIDTH = 400
+IMAGE_HEIGHT = 400
 GRID_SIZE = 4  # 4x4 = 16 cuadrantes
 
 
@@ -27,10 +25,3 @@ def guardarImg(cuadrante_array, path):
 
 def cargarImg(path, shape):
     return np.fromfile(path, dtype=np.uint8).reshape(shape)
-
-
-
-
-
-
-
