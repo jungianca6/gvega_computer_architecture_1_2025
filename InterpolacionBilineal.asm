@@ -4,8 +4,8 @@
 section .data
     in_file      db "cuadrante.img", 0
     out_file     db "output.img", 0
-    ;error_msg   db "File operation failed", 10, 0
-    ;size_error  db "Input file size incorrect", 10, 0
+    error_msg   db "File operation failed", 10, 0
+    size_error  db "Input file size incorrect", 10, 0
     
     
  ; Tamaños para imagen de entrada 100x100 y salida 400x400
@@ -31,14 +31,14 @@ _start:
     call write_output       ; Escribir resultado
     jmp exit_success        ; Salir con éxito
 
-; ==============================================
-; Leer el archivo de entrada (100x100)
-; ==============================================
+; ===================================
+; Abrir y leer el archivo de entrada 
+; ===================================
 read_infile:
     ; Abrir archivo
     mov rax, 2               ; sys_open
-    lea rdi, [in_file]    ; nombre del archivo
-    xor rsi, rsi             ; O_RDONLY
+    lea rdi, [in_file]       ; nombre del archivo
+    xor rsi, rsi             ; modo: O_RDONLY
     syscall
     mov [fd_in], rax         ; guardar file descriptor
     cmp rax, 0               ; verificar error
@@ -64,60 +64,65 @@ read_infile:
 ; ==============================================
 interpolation:
     ; Fase 1: Calcular píxeles horizontales y verticales
-    xor r12, r12             ; y in [0, 99] (filas)
+    xor r12, r12             ; y original [0, 99] (filas)
 .outer_loop:
     cmp r12, WIDTH
-    jge .phase2              ; Terminada fase 1, pasar a fase 2
-    xor r13, r13             ; x in [0, 99] (columnas)
+    jge .phase2              ; Fase 2
+    xor r13, r13             ; x original [0, 99] (columnas)
 .inner_loop:
     cmp r13, WIDTH
-    jge .next_row
+    jge .nextRow
 
-    ; Calcular posición en la salida (4x tamaño)
+    ; Calcular posición en la salida 
+    ; Índice base del píxel ampliado (y*4)*400 + x*4
+    
     mov rax, r12
     shl rax, 2               ; y*4
     imul rax, OUT_WIDTH      ; (y*4)*400
     mov rdx, r13
     shl rdx, 2               ; x*4
-    add rax, rdx             ; base index = (y*4)*400 + x*4
+    add rax, rdx             ; Índice base = (y*4)*400 + x*4
     mov r15, rax             ; Guardar índice base
 
-    ; Obtener píxeles originales P00, P10, P01, P11
+    ; Obtener píxeles originales 
+    
+    ; P00 = pixel original (x, y)
     mov rax, r12
     imul rax, WIDTH
     add rax, r13
     movzx rbx, byte [inputBuffer + rax]  ; P00 (x,y)
 
-    ; Manejo de bordes para P10 (derecha)
+
+    ; P10 = (x+1, y) o copia de P00 si es borde
     cmp r13, WIDTH-1
     je .p10_edge
-    movzx rcx, byte [inputBuffer + rax + 1] ; P10 (x+1,y)
-    jmp .get_p01
+    movzx rcx, byte [inputBuffer + rax + 1] 
+    jmp .get_p01 
 .p10_edge:
-    mov rcx, rbx             ; Si es borde derecho, replicar P00
+    mov rcx, rbx             ;replicar P00
 
+; P01 = (x, y+1) o copia de P00 si es borde inferior
 .get_p01:
-    ; Manejo de bordes para P01 (abajo)
     cmp r12, WIDTH-1
     je .p01_edge
-    movzx r8, byte [inputBuffer + rax + WIDTH] ; P01 (x,y+1)
+    movzx r8, byte [inputBuffer + rax + WIDTH] 
     jmp .get_p11
 .p01_edge:
-    mov r8, rbx              ; Si es borde inferior, replicar P00
+    mov r8, rbx             ;replicar P01 
 
+;P11 = (x+1, y+1) o copia de P01 si es borde
 .get_p11:
-    ; Manejo de bordes para P11 (esquina inferior derecha)
     cmp r13, WIDTH-1
     je .p11_edge
     cmp r12, WIDTH-1
     je .p11_edge
     movzx r9, byte [inputBuffer + rax + WIDTH + 1] ; P11 (x+1,y+1)
-    jmp .calc_interpolation
+    jmp .edge_interpolation
 .p11_edge:
-    mov r9, r8               ; Si es borde, replicar P01
+    mov r9, r8               ; replicar P01
 
-.calc_interpolation:
-    ; === Interpolación de píxeles horizontales (primera fila) ===
+.edge_interpolation:
+    ; === Interpolación horizontal: a1, a2, a3 ===
     ; Píxel a (1/4): (3/4)*P00 + (1/4)*P10
     mov rax, rbx
     imul rax, 3
@@ -139,7 +144,7 @@ interpolation:
     shr rax, 2               ; /4
     mov [outputBuffer + r15 + 3], al ; Escribir a3
 
-    ; === Interpolación de píxeles verticales (primera columna) ===
+    ; === Interpolación vertical: c1,c2,c3 ===
     ; Píxel c (1/4): (3/4)*P00 + (1/4)*P01
     mov rax, rbx
     imul rax, 3
@@ -161,7 +166,7 @@ interpolation:
     shr rax, 2               ; /4
     mov [outputBuffer + r15 + OUT_WIDTH*3], al ; Escribir c3
 
-    ; Escribir píxeles originales en sus posiciones
+    ; Pixeles originales (esquinas conocidas)
     mov [outputBuffer + r15], bl               ; P00 (x,y)
     mov [outputBuffer + r15 + SCALE_FACTOR-1], cl ; P10 (x+3,y)
     mov [outputBuffer + r15 + OUT_WIDTH*(SCALE_FACTOR-1)], r8b ; P01 (x,y+3)
@@ -171,29 +176,28 @@ interpolation:
     inc r13
     jmp .inner_loop
 
-.next_row:
+.nextRow:
     inc r12
     jmp .outer_loop
 
 .phase2:
-    ; Fase 2: Calcular píxeles centrales
-    ; Ahora se necesita procesar la imagen de salida para calcular los píxeles intermedios
-    xor r12, r12             ; y in [0,396], step 4
+    ; Fase 2: Pixeles intermedios interiores
+    xor r12, r12             ; y in [0,396]
 .phase2_y_loop:
     cmp r12, OUT_WIDTH-SCALE_FACTOR
-    jge .done
-    xor r13, r13             ; x in [0,396], step 4
+    jge .end_interpolation
+    xor r13, r13             ; x in [0,396]
 .phase2_x_loop:
     cmp r13, OUT_WIDTH-SCALE_FACTOR
-    jge .phase2_next_row
+    jge .phase2_nextRow
 
-    ; Calcular índice base
+    ; Calcular índice base de bloque 4x4
     mov rax, r12
     imul rax, OUT_WIDTH
     add rax, r13
     mov r15, rax             ; Guardar índice base
 
-    ; Obtener píxeles ya calculados (esquinas)
+    ; Obtener y leer 4 esquinas existentes del bloque
     movzx rbx, byte [outputBuffer + r15]                      ; P00
     movzx rcx, byte [outputBuffer + r15 + SCALE_FACTOR-1]     ; P10
     movzx r8, byte [outputBuffer + r15 + OUT_WIDTH*(SCALE_FACTOR-1)] ; P01
@@ -254,16 +258,16 @@ interpolation:
     add r13, SCALE_FACTOR
     jmp .phase2_x_loop
 
-.phase2_next_row:
+.phase2_nextRow:
     add r12, SCALE_FACTOR
     jmp .phase2_y_loop
 
-.done:
+.end_interpolation:
     ret
 
-; ==============================================
-; Escribir el resultado (400x400)
-; ==============================================
+; ================================================
+; Escribir el resultado de la imagen interpolada
+; ================================================
 write_output:
     ; Crear/abrir archivo de salida
     mov rax, 2               ; sys_open
@@ -277,8 +281,8 @@ write_output:
 
     ; Escribir datos
     mov rax, 1               ; sys_write
-    mov rdi, [fd_out]        ; file descriptor
-    lea rsi, [outputBuffer]    ; buffer de datos
+    mov rdi, [fd_out]        
+    lea rsi, [outputBuffer]    
     mov rdx, OUT_IMG        ; bytes a escribir
     syscall
     cmp rax, OUT_IMG        ; verificar escritura completa
