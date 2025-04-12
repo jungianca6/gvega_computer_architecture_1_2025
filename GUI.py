@@ -7,7 +7,8 @@ import cuadrantes
 
 IMAGE_PATH = "narrador.jpg"
 IMG_OUT_PATH = "cuadrante.img"
-JPG_OUT_PATH = "cuadrante.jpg"
+INTERPOLATED_PATH = "output.img"
+JPG_OUT_PATH = "output.jpg"
 
 
 def GUI():
@@ -51,7 +52,7 @@ def GUI():
         cuadrante = cuadrantes.extraerCuadrante(originalArray, num)
         cuadrantes.guardarImg(cuadrante, IMG_OUT_PATH)
 
-        '''
+
         # Ejecutar ensamblador para interpolar el .img
         try:
             subprocess.run(["nasm", "-felf64", "-o", "InterpolacionBilineal.o", "InterpolacionBilineal.asm"], check=True)
@@ -60,10 +61,10 @@ def GUI():
         except subprocess.CalledProcessError as e:
             print(f"Error al ejecutar el ensamblador: {e}")
             return
-        '''
+
         # Volver a cargar desde .img
-        cargado = cuadrantes.cargarImg(IMG_OUT_PATH, cuadrante.shape)
-        img_pil = Image.fromarray(cargado, mode='L')
+        interpolada = cuadrantes.cargarImg(INTERPOLATED_PATH, (400, 400))
+        img_pil = Image.fromarray(interpolada, mode='L')
         img_pil.save(JPG_OUT_PATH)
 
         cuadrante_tk = ImageTk.PhotoImage(img_pil)

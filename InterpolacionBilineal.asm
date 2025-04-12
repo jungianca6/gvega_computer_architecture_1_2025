@@ -4,10 +4,7 @@
 section .data
     in_file      db "cuadrante.img", 0
     out_file     db "output.img", 0
-    error_msg   db "File operation failed", 10, 0
-    size_error  db "Input file size incorrect", 10, 0
-    
-    
+ 
  ; Tamaños para imagen de entrada 100x100 y salida 400x400
     IN_IMG       equ 10000    
     OUT_IMG      equ 160000   
@@ -41,17 +38,13 @@ read_infile:
     xor rsi, rsi             ; modo: O_RDONLY
     syscall
     mov [fd_in], rax         ; guardar file descriptor
-    cmp rax, 0               ; verificar error
-    jl error_exit
-
+ 
     ; Leer contenido
     mov rax, 0               ; sys_read
     mov rdi, [fd_in]         
     lea rsi, [inputBuffer]   ; buffer de destino
     mov rdx, IN_IMG          ; bytes a leer
     syscall
-    cmp rax, IN_IMG          ; verificar tamaño
-    jne size_error_exit
 
     ; Cerrar archivo
     mov rax, 3               ; sys_close
@@ -276,8 +269,7 @@ write_output:
     mov rdx, 0666o           ; permisos
     syscall
     mov [fd_out], rax        ; guardar file descriptor
-    cmp rax, 0               ; verificar error
-    jl error_exit
+ 
 
     ; Escribir datos
     mov rax, 1               ; sys_write
@@ -285,41 +277,18 @@ write_output:
     lea rsi, [outputBuffer]    
     mov rdx, OUT_IMG        ; bytes a escribir
     syscall
-    cmp rax, OUT_IMG        ; verificar escritura completa
-    jne error_exit
-
+ 
     ; Cerrar archivo
     mov rax, 3               ; sys_close
     mov rdi, [fd_out]
     syscall
     ret
 
-; ==============================================
-; Manejo de errores
-; ==============================================
-error_exit:
-    mov rax, 1               ; sys_write
-    mov rdi, 1               ; stdout
-    lea rsi, [error_msg]     ; mensaje
-    mov rdx, 24              ; longitud
-    syscall
-    jmp exit_failure
-
-size_error_exit:
-    mov rax, 1
-    mov rdi, 1
-    lea rsi, [size_error]
-    mov rdx, 30
-    syscall
-    jmp exit_failure
 
 exit_success:
     mov rax, 60              ; sys_exit
     xor rdi, rdi             ; código 0
     syscall
 
-exit_failure:
-    mov rax, 60              ; sys_exit
-    mov rdi, 1               ; código 1
-    syscall
+
 
