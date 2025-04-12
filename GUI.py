@@ -14,10 +14,10 @@ def GUI():
     # Ventana y componentes
     ventana = tk.Tk()
     ventana.title("Interpolación lineal de imagenes")
-    ventana.geometry("1200x800")  # Ajustar el tamaño de la ventana si es necesario
+    ventana.geometry("1400x800")  # Ajustar el tamaño de la ventana si es necesario
     ventana.resizable(None, None)
 
-    canvas= tk.Canvas(ventana, width=1200, height=800, bg="light blue")
+    canvas= tk.Canvas(ventana, width=1400, height=800, bg="light blue")
     canvas.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     #Etiquetas
