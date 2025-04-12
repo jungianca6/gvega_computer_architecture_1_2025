@@ -51,7 +51,16 @@ def GUI():
         cuadrante = cuadrantes.extraerCuadrante(originalArray, num)
         cuadrantes.guardarImg(cuadrante, IMG_OUT_PATH)
 
-
+        '''
+        # Ejecutar ensamblador para interpolar el .img
+        try:
+            subprocess.run(["nasm", "-felf64", "-o", "bilinear.o", "bilinear.asm"], check=True)
+            subprocess.run(["ld", "-o", "bilinear", "bilinear.o"], check=True)
+            subprocess.run(["./bilinear"], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error al ejecutar el ensamblador: {e}")
+            return
+        '''
         # Volver a cargar desde .img
         cargado = cuadrantes.cargarImg(IMG_OUT_PATH, cuadrante.shape)
         img_pil = Image.fromarray(cargado, mode='L')
