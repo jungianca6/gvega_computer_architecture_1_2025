@@ -30,7 +30,7 @@ def GUI():
                            bg='white', fg='black')
     ogImg.place(x=75, y=150)
 
-    newImg = tk.Label(ventana, text="Imagen interpolada", font=('Times New Roman', 14),
+    newImg = tk.Label(ventana, text="Cuadrícula interpolada", font=('Times New Roman', 14),
                      bg='white', fg='black')
     newImg.place(x=900, y=150)
 
