@@ -3,42 +3,22 @@ from PIL import ImageTk, Image
 import os
 import subprocess
 import numpy as np
+import cuadrantes
 
-IMAGE_WIDTH = 390
-IMAGE_HEIGHT = 390
-GRID_SIZE = 4  # 4x4 = 16 cuadrantes
 IMAGE_PATH = "narrador.jpg"
 IMG_OUT_PATH = "cuadrante.img"
-JPG_OUT_PATH = "cuadrante.jpg"
+INTERPOLATED_PATH = "output.img"
+JPG_OUT_PATH = "output.jpg"
 
-def extraerCuadrante(img_array, quadrant_num):
-    row = (quadrant_num - 1) // GRID_SIZE
-    col = (quadrant_num - 1) % GRID_SIZE
-
-    quad_h = IMAGE_HEIGHT // GRID_SIZE
-    quad_w = IMAGE_WIDTH // GRID_SIZE
-
-    start_y = row * quad_h
-    end_y = start_y + quad_h
-    start_x = col * quad_w
-    end_x = start_x + quad_w
-
-    return img_array[start_y:end_y, start_x:end_x]
-
-def guardarImg(cuadrante_array, path):
-    cuadrante_array.astype(np.uint8).tofile(path)
-
-def cargarImg(path, shape):
-    return np.fromfile(path, dtype=np.uint8).reshape(shape)
 
 def GUI():
     # Ventana y componentes
     ventana = tk.Tk()
     ventana.title("Interpolación lineal de imagenes")
-    ventana.geometry("1200x800")  # Ajustar el tamaño de la ventana si es necesario
+    ventana.geometry("1400x800")  # Ajustar el tamaño de la ventana si es necesario
     ventana.resizable(None, None)
 
-    canvas= tk.Canvas(ventana, width=1200, height=800, bg="light blue")
+    canvas= tk.Canvas(ventana, width=1400, height=800, bg="light blue")
     canvas.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     #Etiquetas
@@ -69,13 +49,22 @@ def GUI():
     cuadranteLabel.place(x=900, y=200)
 
     def mostrarCuadrante(num):
-        cuadrante = extraerCuadrante(originalArray, num)
-        guardarImg(cuadrante, IMG_OUT_PATH)
+        cuadrante = cuadrantes.extraerCuadrante(originalArray, num)
+        cuadrantes.guardarImg(cuadrante, IMG_OUT_PATH)
 
+
+        # Ejecutar ensamblador para interpolar el .img
+        try:
+            subprocess.run(["nasm", "-felf64", "-o", "InterpolacionBilineal.o", "InterpolacionBilineal.asm"], check=True)
+            subprocess.run(["ld", "-o", "InterpolacionBilineal", "InterpolacionBilineal.o"], check=True)
+            subprocess.run(["./InterpolacionBilineal"], check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Error al ejecutar el ensamblador: {e}")
+            return
 
         # Volver a cargar desde .img
-        cargado = cargarImg(IMG_OUT_PATH, cuadrante.shape)
-        img_pil = Image.fromarray(cargado, mode='L')
+        interpolada = cuadrantes.cargarImg(INTERPOLATED_PATH, (400, 400))
+        img_pil = Image.fromarray(interpolada, mode='L')
         img_pil.save(JPG_OUT_PATH)
 
         cuadrante_tk = ImageTk.PhotoImage(img_pil)
