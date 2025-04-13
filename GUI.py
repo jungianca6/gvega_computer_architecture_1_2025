@@ -40,9 +40,22 @@ def GUI():
     originalArray = np.array(originalimg)
     originalImgTK = ImageTk.PhotoImage(originalimg)
 
-    # Crear una etiqueta para mostrar la imagen en la ventana
-    originalLabel = tk.Label(ventana, image=originalImgTK)
-    originalLabel.place(x=75, y=200)
+    # Crear un canvas para mostrar la imagen y dibujar sobre ella
+    originalCanvas = tk.Canvas(ventana, width=390, height=390)
+    originalCanvas.place(x=75, y=200)
+
+    # Mostrar la imagen dentro del canvas
+    originalCanvas.image = originalImgTK  # Para evitar que se borre
+    originalCanvas.create_image(0, 0, anchor=tk.NW, image=originalImgTK)
+
+    # Dibujar la cuadrícula 4x4 encima de la imagen (390x390 -> cada celda = 97x97)
+    cell_size = 100
+    for i in range(1, 4):  # Líneas internas (no la del borde)
+        # Líneas verticales
+        originalCanvas.create_line(i * cell_size, 0, i * cell_size, 400, fill="dark blue", width=1)
+        # Líneas horizontales
+        originalCanvas.create_line(0, i * cell_size, 400, i * cell_size, fill="dark blue", width=1)
+
 
     # Área para la imagen del cuadrante seleccionado
     cuadranteLabel = tk.Label(ventana)
