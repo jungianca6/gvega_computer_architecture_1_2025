@@ -11,13 +11,13 @@ section .data
     
     WIDTH        equ 100      ; Ancho de la imagen de entrada
     OUT_WIDTH    equ 400      ; Ancho de la imagen de salida
-    SCALE_FACTOR equ 4       ; Factor de escala (4x)
+    SCALE_FACTOR equ 4        
 
 section .bss
     inputBuffer   resb IN_IMG     ; Buffer para la imagen de entrada
     outputBuffer  resb OUT_IMG    ; Buffer para la imagen de salida
-    fd_in       resq 1           ; File descriptor de entrada
-    fd_out      resq 1           ; File descriptor de salida
+    fd_in         resq 1          ; File descriptor de entrada
+    fd_out        resq 1          ; File descriptor de salida
 
 section .text
 global _start
@@ -26,7 +26,7 @@ _start:
     call read_infile        ; Leer la imagen de entrada
     call interpolation      ; Aplicar interpolación bilineal
     call write_output       ; Escribir resultado
-    jmp exit_success        ; Salir con éxito
+    jmp exit                ; Salida
 
 ; ===================================
 ; Abrir y leer el archivo de entrada 
@@ -222,7 +222,7 @@ interpolation:
     mov rdx, rdi             ; peso para derecha (1, 2, 3)
 
     ; Obtener píxeles horizontales superiores e inferiores
-    movzx rax, byte [outputBuffer + r15 + rdi]                     ; superior
+    movzx rax, byte [outputBuffer + r15 + rdi]                              ; superior
     movzx rbx, byte [outputBuffer + r15 + OUT_WIDTH*(SCALE_FACTOR-1) + rdi] ; inferior
 
     ; Interpolar verticalmente
@@ -264,7 +264,7 @@ interpolation:
 write_output:
     ; Crear/abrir archivo de salida
     mov rax, 2               ; sys_open
-    lea rdi, [out_file]   ; nombre del archivo
+    lea rdi, [out_file]      
     mov rsi, 577             ; O_WRONLY | O_CREAT | O_TRUNC
     mov rdx, 0666o           ; permisos
     syscall
@@ -275,7 +275,7 @@ write_output:
     mov rax, 1               ; sys_write
     mov rdi, [fd_out]        
     lea rsi, [outputBuffer]    
-    mov rdx, OUT_IMG        ; bytes a escribir
+    mov rdx, OUT_IMG         ; bytes a escribir
     syscall
  
     ; Cerrar archivo
@@ -285,10 +285,7 @@ write_output:
     ret
 
 
-exit_success:
+exit:
     mov rax, 60              ; sys_exit
-    xor rdi, rdi             ; código 0
+    xor rdi, rdi             
     syscall
-
-
-

@@ -49,12 +49,12 @@ def GUI():
     originalCanvas.create_image(0, 0, anchor=tk.NW, image=originalImgTK)
 
     # Dibujar la cuadrícula 4x4 encima de la imagen (390x390 -> cada celda = 97x97)
-    cell_size = 100
+    cellSize = 100
     for i in range(1, 4):  # Líneas internas (no la del borde)
         # Líneas verticales
-        originalCanvas.create_line(i * cell_size, 0, i * cell_size, 400, fill="dark blue", width=1)
+        originalCanvas.create_line(i * cellSize, 0, i * cellSize, 400, fill="dark blue", width=1)
         # Líneas horizontales
-        originalCanvas.create_line(0, i * cell_size, 400, i * cell_size, fill="dark blue", width=1)
+        originalCanvas.create_line(0, i * cellSize, 400, i * cellSize, fill="dark blue", width=1)
 
 
     # Área para la imagen del cuadrante seleccionado
