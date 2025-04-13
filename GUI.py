@@ -14,7 +14,7 @@ JPG_OUT_PATH = "output.jpg"
 def GUI():
     # Ventana y componentes
     ventana = tk.Tk()
-    ventana.title("Interpolación lineal de imagenes")
+    ventana.title("Interpolación bilineal de imagenes")
     ventana.geometry("1400x800")  # Ajustar el tamaño de la ventana si es necesario
     ventana.resizable(None, None)
 
