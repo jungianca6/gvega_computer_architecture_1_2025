@@ -1,11 +1,10 @@
 import tkinter as tk
 
 
-
 class TextEditor(tk.Text):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.config(font=("Noto Serif", 12), bg="#BBDEFB", fg="black", wrap=tk.WORD, undo=True,
+        self.config(font=("Noto Serif", 16), bg="#BBDEFB", fg="black", wrap=tk.WORD, undo=True,
                     insertbackground="#0D47A1")
 
         self.bind("<Control-c>", self.copy)

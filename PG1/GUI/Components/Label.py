@@ -14,12 +14,14 @@ class Label(tk.Label):
         elif style_type == "Warning":
             self.config(font=("Arial", 10, "bold"), fg="white", bg="#0D47A1")
 
+        elif style_type == "List":
+            self.config(font=("Arial", 16), bg="#3B5998", fg="white",
+                        bd=2, relief="raised", padx=5, pady=5,
+                        width=20, anchor='w')
+
         else:  # "Text" por defecto
             self.config(font=("Arial", 12), fg="black", bg="#E3F2FD")
 
-    def set_text(self, text):
+    def SetText(self, text):
         self.config(text=text)
-
-    def set_bg(self, bg):
-        self.config(bg=bg)
 
