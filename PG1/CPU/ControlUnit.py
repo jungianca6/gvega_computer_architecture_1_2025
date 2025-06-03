@@ -12,7 +12,7 @@ class ControlUnit:
         self.PCSrc = 0
         self.PCWrite = 1  # Inicializado en 1 para permitir la escritura en PC
 
-    def generate_signals(self, opcode, funct3, funct7):
+    def generateSignals(self, opcode, funct3, funct7):
         # Resetear señales
         self.RegWrite = self.MemRead = self.MemWrite = 0
         self.ALUOp = self.Branch = self.Jump = self.MemToReg = 0

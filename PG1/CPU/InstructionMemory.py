@@ -4,7 +4,7 @@ class InstructionMemory:
     def __init__(self):
         self.instructions = []
 
-    def load_instructions(self, instructions):
+    def loadInstructions(self, instructions):
         self.instructions = instructions
 
     def fetch(self, pc):

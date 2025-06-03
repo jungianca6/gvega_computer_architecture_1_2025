@@ -2,7 +2,7 @@ class Extend:
     def __init__(self):
         pass
 
-    def sign_extend(self, immediate, bits):
+    def signExtend(self, immediate, bits):
         sign_bit = 1 << (bits - 1)
         return (immediate ^ sign_bit) - sign_bit
 
