@@ -255,12 +255,12 @@ class Pipeline:
                 shift_amount = decoded["imm"]
 
                 # Leer la llave actual (HIGH + LOW como 128 bits)
-                high = self.vault.keys[ks]["high"]
-                low = self.vault.keys[ks]["low"]
+                high, low = self.vault.get_key(ks)
 
                 # Combinar en 128 bits
                 key_value = (high << 64) | low
 
+                # Realizar el shift
                 if decoded["name"] == "BSHL":
                     shifted = (key_value << shift_amount) & ((1 << 128) - 1)  # Mantener 128 bits
                 else:  # BSHR
@@ -270,9 +270,9 @@ class Pipeline:
                 new_high = (shifted >> 64) & 0xFFFFFFFFFFFFFFFF
                 new_low = shifted & 0xFFFFFFFFFFFFFFFF
 
-                # Guardar en la bóveda
-                self.vault.keys[ks]["high"] = new_high
-                self.vault.keys[ks]["low"] = new_low
+                # Guardar en la bóveda usando store_high / store_low
+                self.vault.store_high(ks, new_high)
+                self.vault.store_low(ks, new_low)
 
                 print(f"[Vault] Shift {'LEFT' if decoded['name']=='BSHL' else 'RIGHT'} K{ks}: amount={shift_amount}")
                 print(f"[Vault] New HIGH: {hex(new_high)}, New LOW: {hex(new_low)}")
@@ -318,24 +318,28 @@ class Pipeline:
             decoded = self.mem_wb["decoded"]
             instruction_pipeline = self.mem_wb.get("instruction_pipeline")
 
-            # Verificar si la instrucción actual tiene un destino válido (rd)
-            if "rd" in decoded and decoded["rd"] is not None:
-                # Manejar escritura para LW
-                if "memory_data" in self.mem_wb and decoded["name"] == "LW":
-                    self.register_file.write(decoded["rd"], self.mem_wb["memory_data"])
-                    print(f"WriteBack (LW): Escrito {self.mem_wb['memory_data']} en R{decoded['rd']}")
-
-                # Manejar escritura para ADD o instrucciones tipo R
-                elif "alu_result" in self.mem_wb and decoded["name"] == "ADD":
-                    self.register_file.write(decoded["rd"], self.mem_wb["alu_result"])
-                    print(f"WriteBack (ADD): Escrito {self.mem_wb['alu_result']} en R{decoded['rd']}")
-
-                # Escritura general para cualquier otra instrucción con `alu_result`
-                elif "alu_result" in self.mem_wb:
-                    self.register_file.write(decoded["rd"], self.mem_wb["alu_result"])
-                    print(f"WriteBack: Escrito {self.mem_wb['alu_result']} en R{decoded['rd']}")
+            # Si es instrucción de bóveda o shift, no realiza escritura
+            if decoded["type"] in ["VAULT", "VAULT_SHIFT"]:
+                print("WriteBack: No se realizó escritura (instrucción de bóveda o shift).")
             else:
-                print("WriteBack: No se realizó escritura (instrucción sin registro destino).")
+                # Verificar si la instrucción actual tiene un destino válido (rd)
+                if "rd" in decoded and decoded["rd"] is not None:
+                    # Manejar escritura para LW
+                    if "memory_data" in self.mem_wb and decoded["name"] == "LW":
+                        self.register_file.write(decoded["rd"], self.mem_wb["memory_data"])
+                        print(f"WriteBack (LW): Escrito {self.mem_wb['memory_data']} en R{decoded['rd']}")
+
+                    # Manejar escritura para ADD o instrucciones tipo R
+                    elif "alu_result" in self.mem_wb and decoded["name"] == "ADD":
+                        self.register_file.write(decoded["rd"], self.mem_wb["alu_result"])
+                        print(f"WriteBack (ADD): Escrito {self.mem_wb['alu_result']} en R{decoded['rd']}")
+
+                    # Escritura general para cualquier otra instrucción con `alu_result`
+                    elif "alu_result" in self.mem_wb:
+                        self.register_file.write(decoded["rd"], self.mem_wb["alu_result"])
+                        print(f"WriteBack: Escrito {self.mem_wb['alu_result']} en R{decoded['rd']}")
+                else:
+                    print("WriteBack: No se realizó escritura (instrucción sin registro destino).")
 
             # Registrar la etapa de writeback para interfaz o depuración
             self.writeback_stage = {"instruction_pipeline": instruction_pipeline}
@@ -343,6 +347,7 @@ class Pipeline:
             self.mem_wb = None
         else:
             self.writeback_stage = None  # Para mantener la interfaz coherente
+
 
     def no_op_instruction(self):
         return {

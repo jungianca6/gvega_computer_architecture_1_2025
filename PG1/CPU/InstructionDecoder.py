@@ -13,6 +13,7 @@ class InstructionDecoder:
             (0b0110011, 0b010, 0b0000000): 'SLT',  # Set Less Than (R-type)
             (0b0110011, 0b001, 0b0000000): 'XOR',  # Xor (R-type)
             (0b100, None, None): 'BOVEDA', # Para BSTRH / BSTRL
+            (0b101, None, None): 'SHIFT', # Para BSHL y BSHR
             
         }
 
@@ -24,6 +25,9 @@ class InstructionDecoder:
 
         # Si es una instrucción BOVEDA (tipo 0b100), NO usamos funct3 ni funct7
         if opcode == 0b100:
+            funct3 = None
+            funct7 = None
+        elif opcode == 0b101:
             funct3 = None
             funct7 = None
         else:
