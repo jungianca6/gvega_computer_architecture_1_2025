@@ -1,4 +1,3 @@
-from HazardUnit import *
 from vault import Vault
 import time
 
@@ -42,11 +41,9 @@ class Pipeline:
         self.id_ex = None
         self.ex_mem = None
         self.mem_wb = None
-        self.hazardUnit = HazardUnit()
-        self.mode = "full_hazard_unit"  # Modos posibles: no_hazard, hazard_unit, branch_prediction, full_hazard_unit
 
         self.instrucciones_completadas = 0
-        
+
     def fetch(self):
         """
         Etapa de Fetch: Obtiene la instrucción desde la memoria de instrucciones.
@@ -58,7 +55,6 @@ class Pipeline:
                 self.if_id = {"instruction": instruction, "pc": self.pc.value, "instruction_pipeline": instruction}
                 print(f"[DEBUG] PC en fetch: 0x{self.pc.value}")
                 self.pc.increment()
-                print(self.mode)
 
     def decode(self):
         if self.if_id and self.id_ex is None:
@@ -77,28 +73,6 @@ class Pipeline:
             # Incluir la instrucción original en el diccionario decodificado
             decoded['instruction'] = instruction
 
-            # Detectar riesgos de datos
-            stall_needed, forwarding_signals, branch_prediction = self.hazardUnit.detect_hazards(
-                decode_stage={"decoded": decoded},
-                execute_stage=self.id_ex,
-                memory_stage=self.ex_mem,
-                mode=self.mode
-            )
-
-            if stall_needed:
-                print("Stalling decode: Hazard Unit detectó riesgo")
-                # Inserta un NOP en la etapa de ejecución
-                self.id_ex = {"decoded": self.no_op_instruction(), "control_signals": self.default_control_signals(),
-                              "instruction_pipeline": "NOP"}
-                # Mantén la instrucción actual en if_id para volver a decodificarla en el próximo ciclo
-                return
-
-            if branch_prediction is not None:
-                print(f"Branch Prediction: {'Taken' if branch_prediction else 'Not Taken'}")
-
-            # Agregar señales de forwarding
-            decoded["forwarding"] = forwarding_signals
-
             # Generar señales de control
             self.control_unit.generateSignals(decoded["opcode"], decoded.get("funct3"), decoded.get("funct7"))
 
@@ -108,7 +82,8 @@ class Pipeline:
             print(f"Decode: PC={self.if_id['pc']}: Instrucción={instruction:032b} -> Decodificación={decoded}")
 
             # Actualizar el registro del pipeline para la etapa id_ex
-            self.id_ex = {"decoded": decoded, "control_signals": control_signals,
+            self.id_ex = {"decoded": decoded,
+                          "control_signals": control_signals,
                           "instruction_pipeline": decoded["instruction_pipeline"]}
             self.if_id = None
 
@@ -118,24 +93,17 @@ class Pipeline:
             control_signals = self.id_ex["control_signals"]
             instruction_pipeline = self.id_ex["instruction_pipeline"]
             print(f"Control Signals en execute {control_signals}")
-            forwarding = decoded.get("forwarding", {})
+
             if decoded.get("rs2") is not None:
                 print(f"Decoded rs1: {decoded.get('rs1')}, Decoded rs2: {decoded.get('rs2')}")
                 print(f"Register R{decoded.get('rs1')} Value: {self.register_file.read(decoded.get('rs1'))}")
                 print(f"Register R{decoded.get('rs2')} Value: {self.register_file.read(decoded.get('rs2'))}")
 
             # Manejo de rs1 y rs2 con validación
-            input1 = (
-                self.ex_mem["alu_result"] if forwarding.get("rs1") == "execute" and self.ex_mem else
-                self.mem_wb["alu_result"] if forwarding.get("rs1") == "memory" and self.mem_wb else
-                self.register_file.read(decoded["rs1"]) if "rs1" in decoded and isinstance(decoded["rs1"], int) else 0
-            )
-
-            input2 = (
-                self.ex_mem["alu_result"] if forwarding.get("rs2") == "execute" and self.ex_mem else
-                self.mem_wb["alu_result"] if forwarding.get("rs2") == "memory" and self.mem_wb else
-                self.register_file.read(decoded["rs2"]) if "rs2" in decoded and isinstance(decoded["rs2"], int) else 0
-            )
+            input1 = self.register_file.read(decoded["rs1"]) if "rs1" in decoded and isinstance(decoded["rs1"],
+                                                                                                int) else 0
+            input2 = self.register_file.read(decoded["rs2"]) if "rs2" in decoded and isinstance(decoded["rs2"],
+                                                                                                int) else 0
 
             alu_result = 0
             if decoded["type"] == "R":
@@ -152,18 +120,15 @@ class Pipeline:
                 extended_imm = self.extend.execute(decoded["instruction"], decoded["type"]) * 4
                 alu_result = self.alu.operate(input1, input2, control_signals['ALUOp'])
                 if alu_result == 0:  # Branch Taken
-                    if self.mode in ["branch_prediction", "full_hazard_unit"]:
-                        print("Branch Taken: Incorrect prediction, performing flush")
-                        # Realizar el flush del pipeline
-                        self.if_id = None
-                        self.id_ex = None
-                        # Ajustar el PC al destino correcto
-                        old_pc = self.pc.value
-                        self.pc.set(self.pc.value + extended_imm)
-                        print(f"BEQ Branch Taken: Imm={extended_imm}, PC Before={old_pc}, PC After={self.pc.value}")
-                else:
-                    if self.mode in ["branch_prediction", "full_hazard_unit"]:
-                        print("Branch Not Taken: Prediction was correct.")
+
+                    print("Branch Taken: Incorrect prediction, performing flush")
+                    # Realizar el flush del pipeline
+                    self.if_id = None
+                    self.id_ex = None
+                    # Ajustar el PC al destino correcto
+                    old_pc = self.pc.value
+                    self.pc.set(self.pc.value + extended_imm)
+                    print(f"BEQ Branch Taken: Imm={extended_imm}, PC Before={old_pc}, PC After={self.pc.value}")
             elif decoded["type"] == "VAULT":
                 # Aquí sí usas tu Vault
                 ks = decoded["ks"]
@@ -288,7 +253,6 @@ class Pipeline:
             'rs2': None,
             'imm': 0,
             'instruction': 0,
-            'forwarding': {}
         }
 
     def default_control_signals(self):
