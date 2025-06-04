@@ -58,6 +58,32 @@ class ControlUnit:
                 self.ALUOp = 0b100
             elif funct3 == 0b001:  # XOR
                 self.ALUOp = 0b101
+        elif opcode == 0b100:
+            # Instrucciones de bóveda → no tocan registros ni memoria normal
+            self.RegWrite = 0
+            self.MemRead = 0
+            self.MemWrite = 0
+            self.ALUOp = 0
+            self.Branch = 0
+            self.Jump = 0
+            self.MemToReg = 0
+            self.ALUSrc = 0
+            self.PCSrc = 0
+            self.PCWrite = 1
+        elif opcode == 0b101:
+            # Instrucciones de shift de bóveda
+            self.RegWrite = 0
+            self.MemRead = 0
+            self.MemWrite = 0
+            self.ALUOp = 0
+            self.Branch = 0
+            self.Jump = 0
+            self.MemToReg = 0
+            self.ALUSrc = 0
+            self.PCSrc = 0
+            self.PCWrite = 1
+
+
 
     def __str__(self):
         return f"RegWrite: {self.RegWrite}, MemRead: {self.MemRead}, MemWrite: {self.MemWrite}, ALUOp: {self.ALUOp}, Branch: {self.Branch}, Jump: {self.Jump}, MemToReg: {self.MemToReg}, ALUSrc: {self.ALUSrc}, PCSrc: {self.PCSrc}"

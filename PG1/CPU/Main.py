@@ -21,11 +21,29 @@ if __name__ == "__main__":
     alu = ALU()
     extend = Extend()
 
-    # Instrucciones de ejemplo
-    instructions = [
-        "Aca se pueden poner instrucciones de ejemplo"
-    ]
-    instruction_memory.loadInstructions(instructions)
-
     # Crear el pipeline
     pipeline = Pipeline(pc, instruction_memory, register_file, data_memory, alu, decoder, extend, control_unit)
+
+    # Instrucciones de prueba de la bóveda
+    instruction_memory.loadInstructions([
+        # BSTRH K0, 0xAAAA
+        (0b100 << 29) | (0b00 << 27) | (1 << 26) | (0 << 16) | 0xAAAA,
+
+        # BSTRL K0, 0x5555
+        (0b100 << 29) | (0b00 << 27) | (0 << 26) | (0 << 16) | 0x5555,
+
+        # BSTRH K1, 0xDEAD
+        (0b100 << 29) | (0b01 << 27) | (1 << 26) | (0 << 16) | 0xDEAD,
+
+        # BSTRL K1, 0xBEEF
+        (0b100 << 29) | (0b01 << 27) | (0 << 26) | (0 << 16) | 0xBEEF,
+    ])
+
+    # Ejecutar el pipeline paso a paso
+    pipeline.set_mode("no_hazard")  # No necesitamos hazards para bóveda
+
+    while not pipeline.is_pipeline_empty():
+        pipeline.step()
+
+    # Imprimir el estado de la bóveda
+    pipeline.vault.debug_print()

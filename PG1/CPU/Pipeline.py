@@ -1,4 +1,5 @@
 from HazardUnit import *
+from vault import Vault
 import time
 
 class Pipeline:
@@ -11,6 +12,7 @@ class Pipeline:
         self.decoder = decoder
         self.extend = extend
         self.control_unit = control_unit
+        self.vault = Vault()
 
         # Inicializar las etapas del pipeline como vacías
         self.fetch_stage = None
@@ -171,7 +173,7 @@ class Pipeline:
             decoded["forwarding"] = forwarding_signals
 
             # Generar señales de control
-            self.control_unit.generate_signals(decoded["opcode"], decoded.get("funct3"), decoded.get("funct7"))
+            self.control_unit.generateSignals(decoded["opcode"], decoded.get("funct3"), decoded.get("funct7"))
 
             # Extraer señales de control como diccionario
             control_signals = self.extract_control_signals()
@@ -235,6 +237,49 @@ class Pipeline:
                 else:
                     if self.mode in ["branch_prediction", "full_hazard_unit"]:
                         print("Branch Not Taken: Prediction was correct.")
+            elif decoded["type"] == "VAULT":
+                # Aquí sí usas tu Vault
+                ks = decoded["ks"]
+                h_l = decoded["hl"]
+                immediate = decoded["immediate"]
+
+                if h_l == 1:
+                    self.vault.store_high(ks, immediate)
+                else:
+                    self.vault.store_low(ks, immediate)
+
+                alu_result = 0  # No hace operación en ALU
+            
+            elif decoded["type"] == "VAULT_SHIFT":
+                ks = decoded["ks"]
+                shift_amount = decoded["imm"]
+
+                # Leer la llave actual (HIGH + LOW como 128 bits)
+                high = self.vault.keys[ks]["high"]
+                low = self.vault.keys[ks]["low"]
+
+                # Combinar en 128 bits
+                key_value = (high << 64) | low
+
+                if decoded["name"] == "BSHL":
+                    shifted = (key_value << shift_amount) & ((1 << 128) - 1)  # Mantener 128 bits
+                else:  # BSHR
+                    shifted = key_value >> shift_amount
+
+                # Separar en HIGH y LOW de nuevo
+                new_high = (shifted >> 64) & 0xFFFFFFFFFFFFFFFF
+                new_low = shifted & 0xFFFFFFFFFFFFFFFF
+
+                # Guardar en la bóveda
+                self.vault.keys[ks]["high"] = new_high
+                self.vault.keys[ks]["low"] = new_low
+
+                print(f"[Vault] Shift {'LEFT' if decoded['name']=='BSHL' else 'RIGHT'} K{ks}: amount={shift_amount}")
+                print(f"[Vault] New HIGH: {hex(new_high)}, New LOW: {hex(new_low)}")
+
+                alu_result = 0  # No hay resultado ALU
+
+
 
             print(f"ALU Result: {alu_result}")
             print(f"[Execute] ALU Result: {alu_result}, Control Signals: {control_signals}")

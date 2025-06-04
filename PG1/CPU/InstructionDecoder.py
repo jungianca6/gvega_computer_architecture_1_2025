@@ -12,16 +12,27 @@ class InstructionDecoder:
             (0b0110011, 0b110, 0b0000000): 'OR',  # Or (R-type)
             (0b0110011, 0b010, 0b0000000): 'SLT',  # Set Less Than (R-type)
             (0b0110011, 0b001, 0b0000000): 'XOR',  # Xor (R-type)
+            (0b100, None, None): 'BOVEDA', # Para BSTRH / BSTRL
+            
         }
 
     def decode(self, instruction):
-        # Extraer opcode, funct3 y funct7
-        opcode = instruction & 0b1111111
-        funct3 = (instruction >> 12) & 0b111 if opcode != 0b1101111 else None
-        funct7 = (instruction >> 25) & 0b1111111 if opcode == 0b0110011 else None
+        
+        # EXTRAER CORRECTAMENTE EL TIPO (opcode) PARA TU ISA
+        tipo = (instruction >> 29) & 0b111  # bits [31:29]
+        opcode = tipo  # usar como 'opcode' para que siga igual
+
+        # Si es una instrucción BOVEDA (tipo 0b100), NO usamos funct3 ni funct7
+        if opcode == 0b100:
+            funct3 = None
+            funct7 = None
+        else:
+            funct3 = (instruction >> 12) & 0b111 if opcode != 0b1101111 else None
+            funct7 = (instruction >> 25) & 0b1111111 if opcode == 0b0110011 else None
 
         # Buscar la instrucción en el mapa
         instruction_name = self.instruction_map.get((opcode, funct3, funct7), None)
+
 
         # Si no se encontró la instrucción
         if instruction_name is None:
@@ -83,6 +94,41 @@ class InstructionDecoder:
                 'instruction': instruction,
                 'instruction_pipeline': f"BEQ R{rs1}, R{rs2}, {imm}"
             }
+        elif opcode == 0b100:
+            ks = (instruction >> 27) & 0b11
+            h_l = (instruction >> 26) & 0b1
+            immediate = instruction & 0xFFFF  # Usar solo los 16 bits bajos (como en el ISA)
+
+            return {
+                'opcode': opcode,
+                'type': 'VAULT',
+                'name': 'BSTRH' if h_l == 1 else 'BSTRL',
+                'ks': ks,
+                'hl': h_l,
+                'immediate': immediate,
+                'instruction_pipeline': f"{'BSTRH' if h_l == 1 else 'BSTRL'} K{ks}, {immediate:#06x}"
+            }
+        
+        elif tipo == 0b101:
+            op = (instruction >> 28) & 0b1
+            rd = (instruction >> 24) & 0b1111
+            rs = (instruction >> 20) & 0b1111
+            ks = (instruction >> 18) & 0b11
+            imm = instruction & 0x3FFFF  # 18 bits
+
+            return {
+                'opcode': tipo,
+                'type': 'VAULT_SHIFT',
+                'name': 'BSHL' if op == 0 else 'BSHR',
+                'op': op,
+                'rd': rd,
+                'rs': rs,
+                'ks': ks,
+                'imm': imm,
+                'instruction_pipeline': f"{'BSHL' if op == 0 else 'BSHR'} K{ks}, {imm}"
+            }
+
+
 
         elif opcode == 0b0110011:  # R-type instructions (ADD, SUB, AND, OR, SLT)
             rs1 = (instruction >> 15) & 0b11111
