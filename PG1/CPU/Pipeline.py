@@ -45,81 +45,8 @@ class Pipeline:
         self.hazardUnit = HazardUnit()
         self.mode = "full_hazard_unit"  # Modos posibles: no_hazard, hazard_unit, branch_prediction, full_hazard_unit
 
-        # Temporizador
-        self.start_time = None
-        self.end_time = None
-
-        # Inicializar contador de instrucciones completadas
         self.instrucciones_completadas = 0
-
-    def start_timer(self):
-        """Inicia el temporizador."""
-        self.start_time = time.time()
-        print("Ejecución iniciada.")
-
-    def stop_timer(self):
-        """Detiene el temporizador y muestra el tiempo de ejecución total."""
-        self.end_time = time.time()
-        elapsed_time = self.end_time - self.start_time
-        print(f"Ejecución completada en {elapsed_time:.6f} segundos.")
-        return elapsed_time
-
-    def get_elapsed_time(self):
-        """Devuelve el tiempo transcurrido desde el inicio del pipeline."""
-        if self.start_time is not None:
-            return time.time() - self.start_time
-        return 0.0
-
-    def set_mode(self, mode):
-
-        """
-        Configura el modo de operación del pipeline.
-        """
-        valid_modes = ["no_hazard", "hazard_unit", "branch_prediction", "full_hazard_unit"]
-        if mode in valid_modes:
-            self.mode = mode
-        else:
-            raise ValueError(f"Modo inválido: {mode}. Opciones válidas: {valid_modes}")
-
-    def step(self):
-        """
-        Avanza el pipeline un ciclo de reloj basado en tiempo real.
-        """
-        if self.start_time is None:  # Iniciar temporizador al primer paso
-            self.start_timer()
-
-        print(f"\nClock Cycle: {self.clock_cycle + 1}")
-
-        current_time = time.time()
-
-        # Ejecutar las etapas solo si ha transcurrido el tiempo de latencia
-        if current_time - self.stage_timestamps["WB"] >= self.latency["WB"]:
-            self.writeback()
-            self.stage_timestamps["WB"] = current_time
-
-        if current_time - self.stage_timestamps["MEM"] >= self.latency["MEM"]:
-            self.memory()
-            self.stage_timestamps["MEM"] = current_time
-
-        if current_time - self.stage_timestamps["EX"] >= self.latency["EX"]:
-            self.execute()
-            self.stage_timestamps["EX"] = current_time
-
-        if current_time - self.stage_timestamps["ID"] >= self.latency["ID"]:
-            self.decode()
-            self.stage_timestamps["ID"] = current_time
-
-        if current_time - self.stage_timestamps["IF"] >= self.latency["IF"]:
-            self.fetch()
-            self.stage_timestamps["IF"] = current_time
-
-        # Incrementar el ciclo de reloj
-        self.clock_cycle += 1
-
-        # Verificar si el pipeline está vacío y detener el temporizador
-        if all(stage is None for stage in [self.if_id, self.id_ex, self.ex_mem, self.mem_wb]):
-            self.stop_timer()
-
+        
     def fetch(self):
         """
         Etapa de Fetch: Obtiene la instrucción desde la memoria de instrucciones.
@@ -407,10 +334,6 @@ class Pipeline:
         # Reiniciar el contador de programa (PC)
         self.pc.reset()
 
-        # Reiniciar el temporizador
-        self.start_time = None
-        self.end_time = None
-
         # Vaciar todas las etapas del pipeline
         self.fetch_stage = None
         self.decode_stage = None
@@ -471,7 +394,3 @@ class Pipeline:
 
         return completadas
 
-    def time_remaining(self, stage, current_time):
-        """Calcula el tiempo restante para que una etapa pueda avanzar."""
-        elapsed = current_time - self.stage_timestamps[stage]
-        return max(0, self.latency[stage] - elapsed)
