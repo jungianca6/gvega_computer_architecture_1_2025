@@ -68,8 +68,8 @@ def p_instruction(p):
                    | SHR REGISTER COMMA REGISTER COMMA IMMEDIATE
                    | BSHL REGISTER COMMA REGISTER COMMA BKEY COMMA IMMEDIATE
                    | BSHR REGISTER COMMA REGISTER COMMA BKEY COMMA IMMEDIATE
-                   | BSTR IMMEDIATE
-                   | BSTR BKEY COMMA IMMEDIATE
+                   | BSTRH BKEY COMMA IMMEDIATE
+                   | BSTRL BKEY COMMA IMMEDIATE
                    | LDR REGISTER COMMA REGISTER
                    | LDR REGISTER COMMA REGISTER COMMA IMMEDIATE
                    | LDRI REGISTER COMMA IMMEDIATE
@@ -97,11 +97,15 @@ def p_error(p):
 
 parser = yacc.yacc()
 
+def parsed_program(data):
+    result = parser.parse(data)
+    return result
+
 if __name__ == "__main__":
     with open("tea_encrypt.txt", "r") as f:
         data = f.read()
 
-    result = parser.parse(data, debug=False)
+    result = parsed_program(data)
     print("Parse result:")
     for section_type, content in result:
         print(f"Section: {section_type}")
