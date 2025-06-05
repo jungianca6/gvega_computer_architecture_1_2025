@@ -2,7 +2,6 @@
 from ControlUnit import ControlUnit
 from InstructionDecoder import InstructionDecoder
 from RegisterFile import RegisterFile
-from Extend import Extend
 from ALU import ALU
 from InstructionMemory import InstructionMemory
 from ProgramCounter import ProgramCounter
@@ -18,10 +17,9 @@ if __name__ == "__main__":
     control_unit = ControlUnit()
     register_file = RegisterFile()
     alu = ALU()
-    extend = Extend()
 
     # Crear el pipeline
-    pipeline = Pipeline(pc, instruction_memory, register_file, data_memory, alu, decoder, extend, control_unit)
+    pipeline = Pipeline(pc, instruction_memory, register_file, data_memory, alu, decoder, control_unit)
 
     # Instrucciones de prueba
     instruction_memory.loadInstructions([

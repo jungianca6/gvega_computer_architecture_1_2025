@@ -2,14 +2,13 @@ from vault import Vault
 import time
 
 class Pipeline:
-    def __init__(self, pc, instruction_memory, register_file, data_memory, alu, decoder, extend, control_unit):
+    def __init__(self, pc, instruction_memory, register_file, data_memory, alu, decoder, control_unit):
         self.pc = pc
         self.instruction_memory = instruction_memory
         self.register_file = register_file
         self.data_memory = data_memory
         self.alu = alu
         self.decoder = decoder
-        self.extend = extend
         self.control_unit = control_unit
         self.vault = Vault()
 
