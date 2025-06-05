@@ -3,16 +3,17 @@ class InstructionDecoder:
         pass
 
     def decode(self, instruction):
-        
+
         # EXTRAER CORRECTAMENTE EL TIPO (opcode) PARA TU ISA
         tipo = (instruction >> 29) & 0b111  # Tipo[31:29]
 
+        #Sistema
         if tipo == 0b000:
             op = (instruction >> 28) & 0b1  # OP[28]
             if op == 0b1:
-                return {"name": "END"}
+                return {"opcode": tipo, "type": "Sistema","name": "END"}
             else:
-                return {"name": "NOP"}
+                return {"opcode": tipo, "type": "Sistema","name": "NOP"}
 
         if tipo == 0b001:  # Aritmética
 
@@ -26,42 +27,42 @@ class InstructionDecoder:
 
             if I == 0b0:
                 if op == 0b0000:
-                    return {"name": "MOV", "rd": rd, "rs1": rs1, "rs2": rs2}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "MOV", "rd": rd, "rs1": rs1, "rs2": rs2}
                 elif op == 0b0001:
-                    return {"name": "ADD", "rd": rd, "rs1": rs1, "rs2": rs2}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "ADD", "rd": rd, "rs1": rs1, "rs2": rs2}
                 elif op == 0b0010:
-                    return {"name": "SUB", "rd": rd, "rs1": rs1, "rs2": rs2}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "SUB", "rd": rd, "rs1": rs1, "rs2": rs2}
                 elif op == 0b0011:
-                    return {"name": "MUL", "rd": rd, "rs1": rs1, "rs2": rs2}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "MUL", "rd": rd, "rs1": rs1, "rs2": rs2}
                 elif op == 0b0100:
-                    return {"name": "XOR", "rd": rd, "rs1": rs1, "rs2": rs2}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "XOR", "rd": rd, "rs1": rs1, "rs2": rs2}
                 elif op == 0b0101:
-                    return {"name": "XOR3", "rd": rd, "rs1": rs1, "rs2": rs2, "rs3": rs3}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "XOR3", "rd": rd, "rs1": rs1, "rs2": rs2, "rs3": rs3}
                 elif op == 0b0110:
-                    return {"name": "SHL", "rd": rd, "rs1": rs1, "rs2": rs2}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "SHL", "rd": rd, "rs1": rs1, "rs2": rs2}
                 elif op == 0b0111:
-                    return {"name": "SHR", "rd": rd, "rs1": rs1, "rs2": rs2}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "SHR", "rd": rd, "rs1": rs1, "rs2": rs2}
                 else:
-                    return {"name": "CMP", "rd": rd, "rs1": rs1}
+                    return {"opcode": tipo, "type": "Aritmetica (R-R)","name": "CMP", "rd": rd, "rs1": rs1}
             else:
                 if op == 0b0000:
-                    return {"name": "MOVI", "rd": rd, "rs1": rs1, "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "MOVI", "rd": rd, "rs1": rs1, "imm": imm}
                 elif op == 0b0001:
-                    return {"name": "ADDI", "rd": rd, "rs1": rs1, "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "ADDI", "rd": rd, "rs1": rs1, "imm": imm}
                 elif op == 0b0010:
-                    return {"name": "SUBI", "rd": rd, "rs1": rs1, "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "SUBI", "rd": rd, "rs1": rs1, "imm": imm}
                 elif op == 0b0011:
-                    return {"name": "MULI", "rd": rd, "rs1": rs1, "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "MULI", "rd": rd, "rs1": rs1, "imm": imm}
                 elif op == 0b0100:
-                    return {"name": "XORI", "rd": rd, "rs1": rs1, "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "XORI", "rd": rd, "rs1": rs1, "imm": imm}
                 elif op == 0b0101:
-                    return {"name": "XOR3", "rd": rd, "rs1": rs1, "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "XOR3", "rd": rd, "rs1": rs1, "imm": imm}
                 elif op == 0b0110:
-                    return {"name": "SHLI", "rd": rd, "rs1": rs1,  "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "SHLI", "rd": rd, "rs1": rs1,  "imm": imm}
                 elif op == 0b0111:
-                    return {"name": "SHRI", "rd": rd, "rs1": rs1, "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "SHRI", "rd": rd, "rs1": rs1, "imm": imm}
                 else:
-                    return {"name": "CMPI", "rd": rd, "rs1": rs1, "imm": imm}
+                    return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "CMPI", "rd": rd, "rs1": rs1, "imm": imm}
 
 
         #Memoria
@@ -73,29 +74,29 @@ class InstructionDecoder:
             I  = (instruction >> 27) & 0b1  # OP[27]
             if op == 0b0:
                 if I == 0b1:
-                    return {"name": "LDRI","rd": rd, 'imm': imm}
+                    return {"opcode": tipo, "type": "Memoria","name": "LDRI","rd": rd, 'imm': imm}
                 else:
-                    return {"name": "LDR","rd": rd, "rs1": rs1}
+                    return {"opcode": tipo, "type": "Memoria","name": "LDR","rd": rd, "rs1": rs1}
             else:
                 if I == 0b1:
-                    return {"name": "STRI", "rd": rd, 'imm': imm}
+                    return {"opcode": tipo, "type": "Memoria","name": "STRI", "rd": rd, 'imm': imm}
                 else:
-                    return {"name": "STR", "rd": rd, "rs1": rs1}
+                    return {"opcode": tipo, "type": "Memoria","name": "STR", "rd": rd, "rs1": rs1}
 
         #Control
         if tipo == 0b011:
             op = (instruction >> 26) & 0b111  # OP[28:26]
             imm = instruction & 0x3FFFFFF  # Inmediato[25:0]
             if op == 0b000:
-                return {"name": "BEQ",'imm': imm}
+                return {"opcode": tipo, "type": "Control","name": "BEQ",'imm': imm}
             elif op == 0b001:
-                return {"name": "BNE",'imm': imm}
+                return {"opcode": tipo, "type": "Control","name": "BNE",'imm': imm}
             elif op == 0b010:
-                return {"name": "BLT",'imm': imm}
+                return {"opcode": tipo, "type": "Control","name": "BLT",'imm': imm}
             elif op == 0b011:
-                return {"name": "BGT",'imm': imm}
+                return {"opcode": tipo, "type": "Control","name": "BGT",'imm': imm}
             else:
-                return {"name": "JUMP",'imm': imm}
+                return {"opcode": tipo, "type": "Control","name": "JUMP",'imm': imm}
 
 
         elif tipo == 0b100:
@@ -112,7 +113,7 @@ class InstructionDecoder:
                 'immediate': immediate,
                 'instruction_pipeline': f"{'BSTRH' if h_l == 1 else 'BSTRL'} K{ks}, {immediate:#06x}"
             }
-        
+
         elif tipo == 0b101:
             op = (instruction >> 28) & 0b1
             rd = (instruction >> 24) & 0b1111
