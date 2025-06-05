@@ -62,6 +62,7 @@ class Pipeline:
                 print("Decode: Estado de flush detectado, no se procesa instrucción.")
                 self.if_id = None
                 return
+
             instruction = self.if_id["instruction"]
             decoded = self.decoder.decode(instruction)
 
@@ -73,8 +74,11 @@ class Pipeline:
             # Incluir la instrucción original en el diccionario decodificado
             decoded['instruction'] = instruction
 
-            # Generar señales de control
-            self.control_unit.generateSignals(decoded["opcode"], decoded.get("funct3"), decoded.get("funct7"))
+            self.control_unit.generateSignals(
+                opcode=decoded["opcode"],
+                instruction_type=decoded["type"],  # Ej: "Aritmetica (R-R)", "Memoria", etc.
+                instruction_name=decoded["name"]  # Ej: "ADD", "MOVI", "BEQ"
+            )
 
             # Extraer señales de control como diccionario
             control_signals = self.extract_control_signals()
@@ -84,52 +88,48 @@ class Pipeline:
             # Actualizar el registro del pipeline para la etapa id_ex
             self.id_ex = {"decoded": decoded,
                           "control_signals": control_signals,
-                          "instruction_pipeline": decoded["instruction_pipeline"]}
+                          "pc": self.if_id["pc"]}
             self.if_id = None
 
     def execute(self):
         if self.id_ex and self.ex_mem is None:
             decoded = self.id_ex["decoded"]
-            control_signals = self.id_ex["control_signals"]
+            signals = self.id_ex["control_signals"]
+            pc = self.id_ex["pc"]
+
             instruction_pipeline = self.id_ex["instruction_pipeline"]
-            print(f"Control Signals en execute {control_signals}")
+            print(f"Control Signals en execute {signals}")
 
-            if decoded.get("rs2") is not None:
-                print(f"Decoded rs1: {decoded.get('rs1')}, Decoded rs2: {decoded.get('rs2')}")
-                print(f"Register R{decoded.get('rs1')} Value: {self.register_file.read(decoded.get('rs1'))}")
-                print(f"Register R{decoded.get('rs2')} Value: {self.register_file.read(decoded.get('rs2'))}")
+            # Leer registros (si existen)
+            rs1_val = self.register_file.read(decoded["rs1"]) if "rs1" in decoded else 0
+            rs2_val = self.register_file.read(decoded["rs2"]) if "rs2" in decoded else 0
+            rs3_val = self.register_file.read(decoded["rs3"]) if "rs3" in decoded else 0
 
-            # Manejo de rs1 y rs2 con validación
-            input1 = self.register_file.read(decoded["rs1"]) if "rs1" in decoded and isinstance(decoded["rs1"],
-                                                                                                int) else 0
-            input2 = self.register_file.read(decoded["rs2"]) if "rs2" in decoded and isinstance(decoded["rs2"],
-                                                                                                int) else 0
+            # Operaciones Aritméticas
+            if "Aritmetica" in decoded["type"]:
+                imm = decoded.get("imm", 0)  # Inmediato ya extendido por el compilador
+                alu_result = self.alu.operate(
+                    rs1_val,
+                    rs2_val if "(R-R)" in decoded["type"] else imm,  # Usa RS2 o inmediato
+                    signals["ALUOp"],
+                    rs3_val if decoded["name"] == "XOR3" else None
+                )
 
-            alu_result = 0
-            if decoded["type"] == "R":
-                alu_result = self.alu.operate(input1, input2, control_signals['ALUOp'])
-            elif decoded["type"] == "I":
-                extended_imm = self.extend.execute(decoded["instruction"], decoded["type"])
-                alu_result = self.alu.operate(input1, extended_imm, control_signals['ALUOp'])
-            elif decoded["type"] == "S":
-                extended_imm = self.extend.execute(decoded["instruction"], decoded["type"])
-                print(f"Ejecutando ALU: imput1={input1} , Imm={extended_imm}")
-                alu_result = self.alu.operate(input1, extended_imm, control_signals['ALUOp'])
-            elif decoded["type"] == "B":
-                # Obtener el inmediato extendido
-                extended_imm = self.extend.execute(decoded["instruction"], decoded["type"]) * 4
-                alu_result = self.alu.operate(input1, input2, control_signals['ALUOp'])
-                if alu_result == 0:  # Branch Taken
+                # Saltos (BEQ, JUMP, etc.)
+            elif decoded["type"] == "Control":
+                alu_result = 1 if rs1_val == rs2_val else 0  # Para BEQ/BNE
+                if signals["Branch"] and alu_result == 1:  # Salto tomado
+                    self.pc.set(decoded["imm"])  # Dirección absoluta
 
-                    print("Branch Taken: Incorrect prediction, performing flush")
-                    # Realizar el flush del pipeline
-                    self.if_id = None
-                    self.id_ex = None
-                    # Ajustar el PC al destino correcto
-                    old_pc = self.pc.value
-                    self.pc.set(self.pc.value + extended_imm)
-                    print(f"BEQ Branch Taken: Imm={extended_imm}, PC Before={old_pc}, PC After={self.pc.value}")
-            elif decoded["type"] == "VAULT":
+
+            self.ex_mem = {
+                "alu_result": alu_result,
+                "decoded": decoded,
+                "control_signals": signals
+            }
+            self.id_ex = None
+
+            if decoded["type"] == "VAULT":
                 # Aquí sí usas tu Vault
                 ks = decoded["ks"]
                 h_l = decoded["hl"]
@@ -172,13 +172,15 @@ class Pipeline:
                 alu_result = 0  # No hay resultado ALU
 
 
-
             print(f"ALU Result: {alu_result}")
-            print(f"[Execute] ALU Result: {alu_result}, Control Signals: {control_signals}")
+            print(f"[Execute] ALU Result: {alu_result}, Control Signals: {signals}")
 
             # Escribir en ex_mem
-            self.ex_mem = {"alu_result": alu_result, "control_signals": control_signals, "decoded": decoded,
-                           "instruction_pipeline": instruction_pipeline}
+            self.ex_mem = {
+                "alu_result": alu_result,
+                "decoded": decoded,
+                "control_signals": signals
+            }
             self.id_ex = None
 
     def memory(self):
