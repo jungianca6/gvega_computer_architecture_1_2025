@@ -6,7 +6,6 @@ from Extend import Extend
 from ALU import ALU
 from InstructionMemory import InstructionMemory
 from ProgramCounter import ProgramCounter
-from DataMemory import DataMemory
 from Pipeline import Pipeline
 from DataMemory import DataMemory
 
