@@ -48,11 +48,6 @@ if __name__ == "__main__":
         (0b101 << 29) | (0b1 << 28) | (0 << 24) | (0 << 20) | (0b01 << 18) | (5 & 0x3FFFF),
     ])
 
-    # Ejecutar el pipeline paso a paso
-    pipeline.set_mode("no_hazard")  # No necesitamos hazards para bóveda
-
-    while not pipeline.is_pipeline_empty():
-        pipeline.step()
 
     # Imprimir el estado final de la bóveda
     pipeline.vault.debug_print()

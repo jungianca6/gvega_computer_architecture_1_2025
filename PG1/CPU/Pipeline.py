@@ -94,7 +94,8 @@ class Pipeline:
         if self.id_ex and self.ex_mem is None:
             decoded = self.id_ex["decoded"]
             signals = self.id_ex["control_signals"]
-            pc = self.id_ex["pc"]
+            old_pc = self.id_ex["pc"]
+            alu_result = 0  # Valor por defecto
 
             instruction_pipeline = self.id_ex["instruction_pipeline"]
             print(f"Control Signals en execute {signals}")
@@ -114,21 +115,23 @@ class Pipeline:
                     rs3_val if decoded["name"] == "XOR3" else None
                 )
 
-                # Saltos (BEQ, JUMP, etc.)
+            #Memoria
+            elif decoded["type"] == "Memoria":
+                if "imm" in decoded:
+                    alu_result = decoded["imm"]  # Dirección directa
+                else:
+                    alu_result = self.alu.operate(rs1_val, 0, signals['ALUOp'])
+
+            # Saltos (BEQ, BNE, etc.)
             elif decoded["type"] == "Control":
-                alu_result = 1 if rs1_val == rs2_val else 0  # Para BEQ/BNE
-                if signals["Branch"] and alu_result == 1:  # Salto tomado
-                    self.pc.set(decoded["imm"])  # Dirección absoluta
+                if signals["Branch"]:
+                    alu_result = 1 if rs1_val == rs2_val else 0
+                    if alu_result == 1:  # Salto tomado
+                        self.pc.set(decoded["imm"])
+                        print(f"Branch Taken: PC <- {decoded['imm']}")
 
-
-            self.ex_mem = {
-                "alu_result": alu_result,
-                "decoded": decoded,
-                "control_signals": signals
-            }
-            self.id_ex = None
-
-            if decoded["type"] == "VAULT":
+            # Bóveda
+            elif decoded["type"] == "VAULT":
                 # Aquí sí usas tu Vault
                 ks = decoded["ks"]
                 h_l = decoded["hl"]
@@ -170,10 +173,6 @@ class Pipeline:
 
                 alu_result = 0  # No hay resultado ALU
 
-
-            print(f"ALU Result: {alu_result}")
-            print(f"[Execute] ALU Result: {alu_result}, Control Signals: {signals}")
-
             # Escribir en ex_mem
             self.ex_mem = {
                 "alu_result": alu_result,
@@ -185,76 +184,46 @@ class Pipeline:
     def memory(self):
         if self.ex_mem and self.mem_wb is None:
             decoded = self.ex_mem["decoded"]
-            control_signals = self.ex_mem["control_signals"]
+            signals = self.ex_mem["control_signals"]
             alu_result = self.ex_mem["alu_result"]
             instruction_pipeline = self.ex_mem["instruction_pipeline"]
 
-            if control_signals['MemRead']:
-                memory_data = self.data_memory.read(alu_result)
-                print(f"Memory read: Dirección={alu_result}, Valor={memory_data}")
-                self.mem_wb = {"memory_data": memory_data, "decoded": decoded,
-                               "instruction_pipeline": instruction_pipeline}
-            elif control_signals['MemWrite']:
-                if "rs2" in decoded:
-                    data_to_write = self.register_file.read(decoded["rs2"])
-                    self.data_memory.write(alu_result, data_to_write)
-                    print(f"Memory write: Escritura en dirección={alu_result}, valor={data_to_write}")
-                self.mem_wb = {"decoded": decoded, "instruction_pipeline": instruction_pipeline}
+            # Operaciones de Memoria (LDR/STR)
+            if decoded["type"] == "Memoria":
+                if signals["MemRead"]:  # LDR/LDRI
+                    mem_data = self.data_memory.read(alu_result)
+                    self.mem_wb = {
+                        "memory_data": mem_data,
+                        "decoded": decoded,
+                        "result": mem_data  # Para writeback
+                    }
+                    print(f"Memory Read @ {alu_result}: {mem_data}")
+
+                elif signals["MemWrite"]:  # STR/STRI
+                    data = self.register_file.read(decoded["rs2"]) if "rs2" in decoded else 0
+                    self.data_memory.write(alu_result, data)
+                    self.mem_wb = {"decoded": decoded}  # No hay writeback
+                    print(f"Memory Write @ {alu_result}: {data}")
+
+            # Otras instrucciones (pasan el resultado de execute)
             else:
-                self.mem_wb = {"alu_result": alu_result, "decoded": decoded,
-                               "instruction_pipeline": instruction_pipeline}
+                self.mem_wb = {
+                    "result": alu_result,  # Resultado de ALU o bóveda
+                    "decoded": decoded
+                }
 
             self.ex_mem = None
 
     def writeback(self):
         if self.mem_wb:
             decoded = self.mem_wb["decoded"]
-            instruction_pipeline = self.mem_wb.get("instruction_pipeline")
 
-            # Si es instrucción de bóveda o shift, no realiza escritura
-            if decoded["type"] in ["VAULT", "VAULT_SHIFT"]:
-                print("WriteBack: No se realizó escritura (instrucción de bóveda o shift).")
-            else:
-                # Verificar si la instrucción actual tiene un destino válido (rd)
-                if "rd" in decoded and decoded["rd"] is not None:
-                    # Manejar escritura para LW
-                    if "memory_data" in self.mem_wb and decoded["name"] == "LW":
-                        self.register_file.write(decoded["rd"], self.mem_wb["memory_data"])
-                        print(f"WriteBack (LW): Escrito {self.mem_wb['memory_data']} en R{decoded['rd']}")
-
-                    # Manejar escritura para ADD o instrucciones tipo R
-                    elif "alu_result" in self.mem_wb and decoded["name"] == "ADD":
-                        self.register_file.write(decoded["rd"], self.mem_wb["alu_result"])
-                        print(f"WriteBack (ADD): Escrito {self.mem_wb['alu_result']} en R{decoded['rd']}")
-
-                    # Escritura general para cualquier otra instrucción con `alu_result`
-                    elif "alu_result" in self.mem_wb:
-                        self.register_file.write(decoded["rd"], self.mem_wb["alu_result"])
-                        print(f"WriteBack: Escrito {self.mem_wb['alu_result']} en R{decoded['rd']}")
-                else:
-                    print("WriteBack: No se realizó escritura (instrucción sin registro destino).")
-
-            # Registrar la etapa de writeback para interfaz o depuración
-            self.writeback_stage = {"instruction_pipeline": instruction_pipeline}
-            # Limpiar mem_wb para la siguiente instrucción
+            # Solo escribe si RegWrite está activo y hay un registro destino
+            if self.mem_wb.get("control_signals", {}).get("RegWrite", 0) and "rd" in decoded:
+                data = self.mem_wb.get("memory_data", self.mem_wb.get("result", 0))
+                self.register_file.write(decoded["rd"], data)
+                print(f"Writeback: R{decoded['rd']} = {data}")
             self.mem_wb = None
-        else:
-            self.writeback_stage = None  # Para mantener la interfaz coherente
-
-
-    def no_op_instruction(self):
-        return {
-            'opcode': 0,
-            'funct3': 0,
-            'funct7': 0,
-            'type': 'NOP',
-            'name': 'NOP',
-            'rd': None,
-            'rs1': None,
-            'rs2': None,
-            'imm': 0,
-            'instruction': 0,
-        }
 
     def default_control_signals(self):
         """
