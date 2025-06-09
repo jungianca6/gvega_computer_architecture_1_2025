@@ -87,7 +87,9 @@ class Pipeline:
             # Actualizar el registro del pipeline para la etapa id_ex
             self.id_ex = {"decoded": decoded,
                           "control_signals": control_signals,
-                          "pc": self.if_id["pc"]}
+                          "pc": self.if_id["pc"],
+                          "instruction_pipeline": decoded.get("instruction_pipeline", f"Instr {instruction:08x}")
+}
             self.if_id = None
 
     def execute(self):
@@ -177,7 +179,8 @@ class Pipeline:
             self.ex_mem = {
                 "alu_result": alu_result,
                 "decoded": decoded,
-                "control_signals": signals
+                "control_signals": signals,
+                "instruction_pipeline": instruction_pipeline
             }
             self.id_ex = None
 
@@ -195,21 +198,24 @@ class Pipeline:
                     self.mem_wb = {
                         "memory_data": mem_data,
                         "decoded": decoded,
-                        "result": mem_data  # Para writeback
+                        "result": mem_data,  # Para writeback
+                        "instruction_pipeline": instruction_pipeline
                     }
                     print(f"Memory Read @ {alu_result}: {mem_data}")
 
                 elif signals["MemWrite"]:  # STR/STRI
                     data = self.register_file.read(decoded["rs2"]) if "rs2" in decoded else 0
                     self.data_memory.write(alu_result, data)
-                    self.mem_wb = {"decoded": decoded}  # No hay writeback
+                    self.mem_wb = {"decoded": decoded,
+                                   "instruction_pipeline": instruction_pipeline}  # No hay writeback
                     print(f"Memory Write @ {alu_result}: {data}")
 
             # Otras instrucciones (pasan el resultado de execute)
             else:
                 self.mem_wb = {
                     "result": alu_result,  # Resultado de ALU o bóveda
-                    "decoded": decoded
+                    "decoded": decoded,
+                    "instruction_pipeline": instruction_pipeline
                 }
 
             self.ex_mem = None
@@ -217,12 +223,13 @@ class Pipeline:
     def writeback(self):
         if self.mem_wb:
             decoded = self.mem_wb["decoded"]
+            instr_str = self.mem_wb.get("instruction_pipeline", "<unknown>")
 
             # Solo escribe si RegWrite está activo y hay un registro destino
             if self.mem_wb.get("control_signals", {}).get("RegWrite", 0) and "rd" in decoded:
                 data = self.mem_wb.get("memory_data", self.mem_wb.get("result", 0))
                 self.register_file.write(decoded["rd"], data)
-                print(f"Writeback: R{decoded['rd']} = {data}")
+                print(f"Writeback: {instr_str} → R{decoded['rd']} = {data}")
             self.mem_wb = None
 
     def default_control_signals(self):
@@ -260,3 +267,22 @@ class Pipeline:
             'PCSrc': self.control_unit.PCSrc,
             'PCWrite': self.control_unit.PCWrite
         }
+
+    def step(self):
+        print(f"\nClock Cycle: {self.clock_cycle + 1}")
+        self.writeback()
+        self.memory()
+        self.execute()
+        self.decode()
+        self.fetch()
+        self.clock_cycle += 1
+
+    def is_pipeline_empty(self):
+        instrucciones_terminadas = (
+            self.pc.value >= len(self.instruction_memory.instructions) * 4
+        )
+        etapas_vacias = all(
+            stage is None for stage in [self.if_id, self.id_ex, self.ex_mem, self.mem_wb]
+        )
+        return instrucciones_terminadas and etapas_vacias
+   
