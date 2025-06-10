@@ -8,7 +8,10 @@ from GUI.Components.Label import Label
 from GUI.Components.TextEditor import TextEditor
 from GUI.Components.RegisterFrame import RegisterFrame
 from GUI.Components.MemoryFrame import MemoryFrame
+from GUI.Components.StateFrame import StateFrame
+
 from Compilador.compilador import compilar
+
 from CPU.Cpu import Cpu
 
 
@@ -98,6 +101,13 @@ class MainGUI:
         self.memoryFrame = None
         self.PlaceMemoryList()
 
+        # Marco de estado del procesador
+        self.state_canvas = tk.Canvas(self.root_canvas, width=650, height=200, bg="#3B5998",
+                                      bd=0, highlightthickness=0)
+        self.state_canvas.place(x=(self.xSize / 2), y=100, anchor='nw')
+        self.stateFrame = StateFrame(self.state_canvas, pipe_stages=None)
+        self.stateFrame.place(x=0, y=0, width=650, height=200, anchor='nw')
+
     def run(self):
         # Ejecutar la ventana principal
         self.root.mainloop()
@@ -119,29 +129,30 @@ class MainGUI:
             return None
 
         print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
+        self.stateFrame.update_values(pipe_stages)
         self.registers = registers
         self.memory = memory
         self.memoryFrame.UpdateMemories(memory)
         self.registerFrame.UpdateRegisters(registers)
-
         return None
 
     def RunProcessorBtn(self):
-        # Ejecutar el procesador completo
         print("Running processor...")
+        self._run_processor_step()
 
-        while True:
-            pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
-            if all(stage is None for stage in pipe_stages.values()):
-                messagebox.showinfo("Finished", "No more instructions to execute.")
-                break
-            print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
-            self.registers = registers
-            self.memory = memory
-            self.memoryFrame.UpdateMemories(memory)
-            self.registerFrame.UpdateRegisters(registers)
-
-        return None
+    def _run_processor_step(self):
+        pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
+        if all(stage is None for stage in pipe_stages.values()):
+            messagebox.showinfo("Finished", "No more instructions to execute.")
+            return
+        print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
+        self.stateFrame.update_values(pipe_stages)
+        self.registers = registers
+        self.memory = memory
+        self.memoryFrame.UpdateMemories(memory)
+        self.registerFrame.UpdateRegisters(registers)
+        # Schedule next step after 1 second (1000 ms)
+        self.root.after(1000, self._run_processor_step)
 
     def UploadFile(self):
         # Abrir un diálogo para seleccionar un archivo
@@ -222,3 +233,4 @@ class MainGUI:
             "<Configure>",
             lambda event: self.memory_canvas.configure(scrollregion=self.memory_canvas.bbox("all"))
         )
+
