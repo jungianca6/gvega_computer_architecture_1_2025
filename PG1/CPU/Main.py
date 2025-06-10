@@ -57,8 +57,6 @@ if __name__ == "__main__":
 
     cpu.setInstructions(instruction)
 
-    cpu.runAll()
-
     """if True:
         while not cpu.pipeline.is_pipeline_empty():
             pipe_stages, pipe_cycle, registers, memory = cpu.runCPU()
