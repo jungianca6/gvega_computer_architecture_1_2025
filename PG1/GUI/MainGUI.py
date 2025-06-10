@@ -8,6 +8,7 @@ from GUI.Components.Label import Label
 from GUI.Components.TextEditor import TextEditor
 from GUI.Components.RegisterList import RegisterList
 from GUI.Components.MemoryList import MemoryList
+from Compilador.compilador import compilar
 
 
 class MainGUI:
@@ -15,8 +16,9 @@ class MainGUI:
         self.xSize = 1600
         self.ySize = 900
         self.registers = None
+        self.instructions = None
 
-        self.code_path = os.path.join(os.getcwd(), "files", "isa_code.txt")
+        self.code_path = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/isa_code.txt")
 
         # fondos: #1976D2, secundario: #64B5F6, detales: #BBDEFB, advertencias: #0D47A1
 
@@ -54,6 +56,10 @@ class MainGUI:
         self.btn_save_file = Button(self.root_canvas, text="Save", command=self.SaveFile,
                                     tooltip_text="Save File")
         self.btn_save_file.place(x=150, y=60, anchor='nw')
+
+        self.btn_compile_file = Button(self.root_canvas, text="Compile", command=self.CompileFile,
+                                       tooltip_text="Compile File")
+        self.btn_compile_file.place(x=250, y=60, anchor='nw')
 
         self.registers = [i ** 2 for i in range(16)]
 
@@ -107,15 +113,35 @@ class MainGUI:
         return None
 
     def SaveFile(self):
-        if not os.path.exists(os.path.dirname(self.code_path)):
-            os.makedirs(os.path.dirname(self.code_path))
+        dir_path = os.path.dirname(self.code_path)
+        print(f"Saving to: {self.code_path}")  # Depuración
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path, exist_ok=True)
         try:
+            content = self.code_editor.get("1.0", tk.END)
+            print(f"Content to save:\n{content}")  # Debug: content
             with open(self.code_path, 'w', encoding="utf-8") as f:
-                content = self.code_editor.get("1.0", tk.END)
                 f.write(content)
             messagebox.showinfo("Success", f"File saved")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save file: {e}")
+        return None
+
+    def CompileFile(self):
+        self.SaveFile()
+
+        try:
+            self.instructions = compilar(self.code_path)
+            if self.instructions is not None:
+                messagebox.showinfo("Compilation Success", "File compiled successfully!")
+                print("Compilation successful. Instructions:")
+                for i, instr in enumerate(self.instructions):
+                    print(f"{i:03X}: {instr}")
+
+        except Exception as e:
+            messagebox.showerror("Compilation Error", f"An error occurred during compilation: {e}")
+            print(f"Compilation Error: {e}")
+            return None
 
         return None
 

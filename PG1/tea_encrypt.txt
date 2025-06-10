@@ -10,7 +10,7 @@ _start:
 	ldr r0, r2		@ v0 = v[0]
 	ldr r1, r2, #4	@ v1 = v[1]
 	
-	@movi r3, 0x9e3779b9 	 Quemar DELTA a R3, lo hace quemado el procesador
+	@ movi r3, 0x9e3779b9 	 Quemar DELTA a R3, lo hace quemado el procesador
 	
 	movi r4, #0 		@ sum = 0
 	movi r10, #0		@ i = 0
