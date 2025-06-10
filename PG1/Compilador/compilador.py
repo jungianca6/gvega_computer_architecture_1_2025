@@ -115,9 +115,9 @@ def compilar_programa(secciones_lista):
             tipo, nombre, valores = item
 
             if tipo == 'word':
-                tamaño = valores[0]
+                size = valores[0]
                 tabla_variables[nombre] = direccion_datos
-                for _ in range(tamaño):
+                for _ in range(size):
                     memoria_datos[direccion_datos] = 0
                     direccion_datos += 4
 

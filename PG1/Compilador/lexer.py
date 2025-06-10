@@ -40,46 +40,54 @@ reserved = {
 }
 
 tokens = [
-    'LABEL_DEF', 'LABEL',
-    'REGISTER', 'BKEY',
-    'IMMEDIATE', 'COMMA', 
-    'NEWLINE', 'COLON', 
-    'COMMENT', 'EQUALS',
-] + list(set(reserved.values()))
+             'LABEL_DEF', 'LABEL',
+             'REGISTER', 'BKEY',
+             'IMMEDIATE', 'COMMA',
+             'NEWLINE', 'COLON',
+             'COMMENT', 'EQUALS',
+         ] + list(set(reserved.values()))
 
 t_EQUALS = r'='
 t_COMMA = r','
 t_COLON = r':'
 
+
 def t_SECTION(t):
     r'\.section'
     return t
+
 
 def t_TEXT(t):
     r'\.text'
     return t
 
+
 def t_DATA(t):
     r'\.data'
     return t
+
 
 def t_VAULT(t):
     r'\.vault'
     return t
 
+
 def t_WORD(t):
     r'\.word'
     return t
+
 
 def t_REGISTER(t):
     r'[Rr][0-9]+'
     t.value = t.value.upper()  # opcional para normalizar a mayúscula
     return t
 
+
 def t_BKEY(t):
     r'[Kk][0-3]'
     t.value = t.value.upper()
     return t
+
 
 def t_IMMEDIATE(t):
     r'0x[0-9a-fA-F]+|\#-?\d+|-?\d+'
@@ -92,10 +100,12 @@ def t_IMMEDIATE(t):
         t.value = int(val)
     return t
 
+
 def t_LABEL_DEF(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*:'
     t.value = t.value[:-1]  # eliminar el ':'
     return t
+
 
 def t_LABEL(t):
     r'[A-Za-z_][\w_]*'
@@ -107,23 +117,27 @@ def t_LABEL(t):
         t.type = 'LABEL'
     return t
 
+
 def t_COMMENT(t):
     r'\@.*'
     pass  # ignorar comentarios
+
 
 def t_NEWLINE(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
     return t
 
+
 t_ignore = ' \t'
+
 
 def t_error(t):
     print(f"Carácter ilegal '{t.value[0]}'")
     t.lexer.skip(1)
 
-lexer = lex.lex()
 
+lexer = lex.lex()
 
 if __name__ == "__main__":
     with open("tea_decrypt.txt", "r") as f:
@@ -151,4 +165,3 @@ if __name__ == "__main__":
             tokens_en_linea = []
 
         tokens_en_linea.append(f"{tok.type:<12} {tok.value}")
-
