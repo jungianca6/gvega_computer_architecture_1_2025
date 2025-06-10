@@ -13,15 +13,19 @@ from Compilador.compilador import compilar
 
 class MainGUI:
     def __init__(self):
+        # Configuración de la ventana principal
         self.xSize = 1600
         self.ySize = 900
+        # Inicialización de variables
         self.registers = None
         self.instructions = None
 
+        # Ruta del archivo de ejecutable
         self.code_path = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/isa_code.txt")
 
         # fondos: #1976D2, secundario: #64B5F6, detales: #BBDEFB, advertencias: #0D47A1
 
+        # Inicialización de la ventana principal
         self.root = tk.Tk()
         self.root.title("ISA - Aplicaciones de Seguridad Informática")
         self.root.geometry(f"{self.xSize}x{self.ySize}")
@@ -31,36 +35,49 @@ class MainGUI:
                                      bd=0, highlightthickness=0)
         self.root_canvas.pack()
 
+        # Botones y etiquetas
+        # Botón de salir
         self.btn_exit = Button(self.root_canvas, text="✘", command=self.ExitBtn,
                                tooltip_text="Exit")
         self.btn_exit.place(x=(self.xSize - 10), y=10, anchor='ne')
 
+        # Etiqueta de título
         self.lb_title = Label(self.root_canvas, text="ISA - Aplicaciones de Seguridad Informática", style_type="Title")
         self.lb_title.place(x=(self.xSize / 2), y=10, anchor='n')
 
+        # Editor de código
         self.code_editor = TextEditor(self.root_canvas)
         self.code_editor.place(x=50, y=100, width=700, height=750, anchor='nw')
 
+        # Botones de acción
+        # Botón de ejecución por ciclo
         self.btn_run_cycle = Button(self.root_canvas, text="▶", command=self.RunCycleBtn,
                                     tooltip_text="Execute per Cycle")
         self.btn_run_cycle.place(x=(self.xSize / 2), y=60, anchor='nw')
 
+        # Botón de ejecución del procesador
         self.btn_run_processor = Button(self.root_canvas, text="▶▶", command=self.RunProcessorBtn,
                                         tooltip_text="Execute Processor")
         self.btn_run_processor.place(x=(self.xSize / 2) + 50, y=60, anchor='nw')
 
+        # Botones de archivo
+        # Botón de subir archivo
         self.btn_upload_file = Button(self.root_canvas, text="Open", command=self.UploadFile,
                                       tooltip_text="Upload File")
         self.btn_upload_file.place(x=50, y=60, anchor='nw')
 
+        # Botón de guardar archivo
         self.btn_save_file = Button(self.root_canvas, text="Save", command=self.SaveFile,
                                     tooltip_text="Save File")
         self.btn_save_file.place(x=150, y=60, anchor='nw')
 
+        # Botón de compilar archivo
         self.btn_compile_file = Button(self.root_canvas, text="Compile", command=self.CompileFile,
                                        tooltip_text="Compile File")
         self.btn_compile_file.place(x=250, y=60, anchor='nw')
 
+        # Inicialización de registros y memoria
+        # Marco de registros
         self.registers = [i ** 2 for i in range(16)]
 
         self.reg_canvas = tk.Canvas(self.root_canvas, width=300, height=500, bg="#3B5998",
@@ -70,6 +87,7 @@ class MainGUI:
         lb_reg.place(x=(self.xSize / 2), y=350, anchor='sw')
         self.PlaceRegisterList()
 
+        # Marco de memoria
         self.memory_canvas = tk.Canvas(self.root_canvas, width=300, height=500, bg="#3B5998",
                                   bd=0, highlightthickness=0)
         self.memory_canvas.place(x=(self.xSize / 2) + 320, y=350, anchor='nw')
@@ -78,48 +96,48 @@ class MainGUI:
         self.PlaceMemoryList()
 
     def run(self):
+        # Ejecutar la ventana principal
         self.root.mainloop()
-
         return None
 
     def ExitBtn(self):
+        # Cerrar la ventana y salir de la aplicación
         self.root.destroy()
         print("Exiting application...")
-
         return None
 
     def RunCycleBtn(self):
+        # Ejecutar un ciclo de la CPU
         print("Running cycle...")
-
         return None
 
     def RunProcessorBtn(self):
+        # Ejecutar el procesador completo
         print("Running processor...")
-
         return None
 
     def UploadFile(self):
+        # Abrir un diálogo para seleccionar un archivo
         file_path = filedialog.askopenfilename(
             title="Open File",
             filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
         )
-
         if file_path:
             with open(file_path, 'r') as file:
                 content = file.read()
             self.code_editor.delete("1.0", tk.END)
             self.code_editor.insert(tk.END, content)
-
         return None
 
     def SaveFile(self):
+        # Guardar el contenido del editor de código en un archivo
         dir_path = os.path.dirname(self.code_path)
         print(f"Saving to: {self.code_path}")  # Depuración
         if not os.path.exists(dir_path):
             os.makedirs(dir_path, exist_ok=True)
         try:
             content = self.code_editor.get("1.0", tk.END)
-            print(f"Content to save:\n{content}")  # Debug: content
+            # print(f"Content to save:\n{content}")  # Debug: content
             with open(self.code_path, 'w', encoding="utf-8") as f:
                 f.write(content)
             messagebox.showinfo("Success", f"File saved")
@@ -128,19 +146,18 @@ class MainGUI:
         return None
 
     def CompileFile(self):
+        # Guarda y compila el archivo
         self.SaveFile()
-
         try:
             self.instructions = compilar(self.code_path)
             if self.instructions is not None:
                 messagebox.showinfo("Compilation Success", "File compiled successfully!")
-                print("Compilation successful. Instructions:")
-                for i, instr in enumerate(self.instructions):
-                    print(f"{i:03X}: {instr}")
+                # print("Compilation successful. Instructions:")
+                # for i, instr in enumerate(self.instructions):
+                #     print(f"{i:03X}: {instr}")
 
         except Exception as e:
             messagebox.showerror("Compilation Error", f"An error occurred during compilation: {e}")
-            print(f"Compilation Error: {e}")
             return None
 
         return None
