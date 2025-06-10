@@ -28,9 +28,9 @@ class ControlUnit:
         elif opcode == 0b001:
             self.RegWrite = 1
             self.ALUOp = {
-                "MOV": 0b0000, "ADD": 0b0001, "SUB": 0b0010,
-                "MUL": 0b0011, "XOR": 0b0100, "XOR3": 0b0101,
-                "SHL": 0b0110, "SHR": 0b0111, "CMP": 0b1000
+                "MOV": 0b0000, "MOVI": 0b0000, "ADD": 0b0001, "ADDI": 0b0001, "SUB": 0b0010, "SUBI": 0b0010,
+                "MUL": 0b0011, "MULI": 0b0011, "XOR": 0b0100, "XORI": 0b0100, "XOR3": 0b0101,
+                "SHL": 0b0110, "SHLI": 0b0110, "SHR": 0b0111, "SHRI": 0b0111, "CMP": 0b1000, "CMPI": 0b1000
             }[instruction_name]
             self.ALUSrc = 1 if "(R-I)" in instruction_type else 0
 

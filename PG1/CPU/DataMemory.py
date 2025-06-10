@@ -40,3 +40,7 @@ class DataMemory:
         if self.update_callback:
             for address in range(0, len(self.memory) * 4, 4):
                 self.update_callback(address, 0)
+
+    def getMemory(self):
+        """Devuelve una copia de la memoria."""
+        return self.memory.copy()

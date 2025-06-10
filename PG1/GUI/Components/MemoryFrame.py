@@ -2,10 +2,10 @@ import tkinter as tk
 from GUI.Components.Label import Label
 
 
-class MemoryList(tk.Frame):
+class MemoryFrame(tk.Frame):
     def __init__(self, master=None, memory=None, **kwargs):
         super().__init__(master, **kwargs)
-        self.memories = memory if memory else [0] * 256
+        self.memories = memory if memory else [0] * 128
         self.labels = []
         self.config(bg="#3B5998")
 

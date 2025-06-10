@@ -6,9 +6,10 @@ from tkinter import messagebox
 from GUI.Components.Button import Button
 from GUI.Components.Label import Label
 from GUI.Components.TextEditor import TextEditor
-from GUI.Components.RegisterList import RegisterList
-from GUI.Components.MemoryList import MemoryList
+from GUI.Components.RegisterFrame import RegisterFrame
+from GUI.Components.MemoryFrame import MemoryFrame
 from Compilador.compilador import compilar
+from CPU.Cpu import Cpu
 
 
 class MainGUI:
@@ -19,6 +20,8 @@ class MainGUI:
         # Inicialización de variables
         self.registers = None
         self.instructions = None
+        self.memory = None
+        self.cpu = Cpu()
 
         # Ruta del archivo de ejecutable
         self.code_path = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/isa_code.txt")
@@ -78,13 +81,12 @@ class MainGUI:
 
         # Inicialización de registros y memoria
         # Marco de registros
-        self.registers = [i ** 2 for i in range(16)]
-
         self.reg_canvas = tk.Canvas(self.root_canvas, width=300, height=500, bg="#3B5998",
                                     bd=0, highlightthickness=0)
         self.reg_canvas.place(x=(self.xSize / 2), y=350, anchor='nw')
         lb_reg = Label(self.root_canvas, text="Registers:", style_type="Subtitle")
         lb_reg.place(x=(self.xSize / 2), y=350, anchor='sw')
+        self.registerFrame = None
         self.PlaceRegisterList()
 
         # Marco de memoria
@@ -93,6 +95,7 @@ class MainGUI:
         self.memory_canvas.place(x=(self.xSize / 2) + 320, y=350, anchor='nw')
         self.lb_memory = Label(self.root_canvas, text="Memory:", style_type="Subtitle")
         self.lb_memory.place(x=(self.xSize / 2) + 320, y=350, anchor='sw')
+        self.memoryFrame = None
         self.PlaceMemoryList()
 
     def run(self):
@@ -109,6 +112,18 @@ class MainGUI:
     def RunCycleBtn(self):
         # Ejecutar un ciclo de la CPU
         print("Running cycle...")
+
+        pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
+        if pipe_stages is not None:
+            print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
+            self.registers = registers
+            self.memory = memory
+            self.memoryFrame.UpdateMemories(memory)
+            self.registerFrame.UpdateRegisters(registers)
+        else:
+            messagebox.showinfo("Finished", "No more instructions to execute.")
+
+
         return None
 
     def RunProcessorBtn(self):
@@ -151,10 +166,10 @@ class MainGUI:
         try:
             self.instructions = compilar(self.code_path)
             if self.instructions is not None:
+                # Cargar las instrucciones en el CPU
+                self.cpu.setInstructions(self.instructions)
+                print(f"{self.instructions}")
                 messagebox.showinfo("Compilation Success", "File compiled successfully!")
-                # print("Compilation successful. Instructions:")
-                # for i, instr in enumerate(self.instructions):
-                #     print(f"{i:03X}: {instr}")
 
         except Exception as e:
             messagebox.showerror("Compilation Error", f"An error occurred during compilation: {e}")
@@ -171,8 +186,8 @@ class MainGUI:
         reg_frame = tk.Frame(self.reg_canvas, bg="#1976D2")
         self.reg_canvas.create_window((0, 0), window=reg_frame, anchor='nw')
 
-        registers_list = RegisterList(reg_frame, registers=self.registers)
-        registers_list.pack(fill="x", expand=True)
+        self.registerFrame = RegisterFrame(reg_frame, registers=self.registers)
+        self.registerFrame.pack(fill="x", expand=True)
 
         reg_frame.bind(
             "<Configure>",
@@ -188,8 +203,8 @@ class MainGUI:
         memory_frame = tk.Frame(self.memory_canvas, bg="#1976D2")
         self.memory_canvas.create_window((0, 0), window=memory_frame, anchor='nw')
 
-        memory_list = MemoryList(memory_frame)
-        memory_list.pack(fill="x", expand=True)
+        self.memoryFrame = MemoryFrame(memory_frame)
+        self.memoryFrame.pack(fill="x", expand=True)
 
         memory_frame.bind(
             "<Configure>",

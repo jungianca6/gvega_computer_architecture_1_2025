@@ -2,7 +2,7 @@ import tkinter as tk
 from GUI.Components.Label import Label
 
 
-class RegisterList(tk.Frame):
+class RegisterFrame(tk.Frame):
     def __init__(self, master=None, registers=None, **kwargs):
         super().__init__(master, **kwargs)
         self.registers = registers if registers else [0]*16

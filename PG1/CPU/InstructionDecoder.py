@@ -98,7 +98,7 @@ class InstructionDecoder:
             else:
                 return {"opcode": tipo, "type": "Control","name": "JUMP",'imm': imm}
 
-
+        # Boveda - Almacenar
         elif tipo == 0b100:
             ks = (instruction >> 27) & 0b11
             h_l = (instruction >> 26) & 0b1
@@ -114,6 +114,7 @@ class InstructionDecoder:
                 'instruction_pipeline': f"{'BSTRH' if h_l == 1 else 'BSTRL'} K{ks}, {immediate:#06x}"
             }
 
+        # Boveda - Shift
         elif tipo == 0b101:
             op = (instruction >> 28) & 0b1
             rd = (instruction >> 24) & 0b1111
@@ -127,7 +128,7 @@ class InstructionDecoder:
                 'name': 'BSHL' if op == 0 else 'BSHR',
                 'op': op,
                 'rd': rd,
-                'rs': rs,
+                'rs1': rs,
                 'ks': ks,
                 'imm': imm,
                 'instruction_pipeline': f"{'BSHL' if op == 0 else 'BSHR'} K{ks}, {imm}"
