@@ -114,21 +114,33 @@ class MainGUI:
         print("Running cycle...")
 
         pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
-        if pipe_stages is not None:
-            print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
-            self.registers = registers
-            self.memory = memory
-            self.memoryFrame.UpdateMemories(memory)
-            self.registerFrame.UpdateRegisters(registers)
-        else:
+        if all(stage is None for stage in pipe_stages.values()):
             messagebox.showinfo("Finished", "No more instructions to execute.")
+            return None
 
+        print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
+        self.registers = registers
+        self.memory = memory
+        self.memoryFrame.UpdateMemories(memory)
+        self.registerFrame.UpdateRegisters(registers)
 
         return None
 
     def RunProcessorBtn(self):
         # Ejecutar el procesador completo
         print("Running processor...")
+
+        while True:
+            pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
+            if all(stage is None for stage in pipe_stages.values()):
+                messagebox.showinfo("Finished", "No more instructions to execute.")
+                break
+            print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
+            self.registers = registers
+            self.memory = memory
+            self.memoryFrame.UpdateMemories(memory)
+            self.registerFrame.UpdateRegisters(registers)
+
         return None
 
     def UploadFile(self):

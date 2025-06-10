@@ -57,13 +57,14 @@ if __name__ == "__main__":
 
     cpu.setInstructions(instruction)
 
-    """if True:
-        while not cpu.pipeline.is_pipeline_empty():
+    if True:
+
+        while not cpu.is_empty:
             pipe_stages, pipe_cycle, registers, memory = cpu.runCPU()
             print(f"Pipeline Stages: {pipe_stages}")
             print(f"Pipeline Cycle: {pipe_cycle}")
             print(f"Registers: {registers}")
             print(f"Memory: {memory}")
-        print ("CPU execution completed.")"""
+        print("CPU execution completed.")
 
     cpu.pipeline.vault.debug_print()

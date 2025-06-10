@@ -17,6 +17,7 @@ class Cpu:
         self.control_unit = ControlUnit()
         self.register_file = RegisterFile()
         self.alu = ALU()
+        self.RUN_PIPELINE = True
 
         self.pipeline = Pipeline(self.pc, self.instruction_memory, self.register_file,
                                  self.data_memory, self.alu, self.decoder, self.control_unit)
@@ -32,8 +33,11 @@ class Cpu:
                 processed_instructions.append(instr)
         self.instruction_memory.loadInstructions(processed_instructions)
         self.pc.reset()
+        self.is_empty = self.pipeline.is_pipeline_empty()
 
     def runCPU(self):
-        pipe_stages, pipe_cycle = self.pipeline.step()
+        if self.RUN_PIPELINE:
+            pipe_stages, pipe_cycle = self.pipeline.step()
 
-        return pipe_stages, pipe_cycle, self.register_file.getRegisters(), self.data_memory.getMemory()
+            return pipe_stages, pipe_cycle, self.register_file.getRegisters(), self.data_memory.getMemory()
+        return None
