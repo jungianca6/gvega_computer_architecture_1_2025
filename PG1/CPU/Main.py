@@ -6,15 +6,7 @@ if __name__ == "__main__":
     cpu = Cpu()
 
     # Aquí puedes cargar instrucciones o realizar otras configuraciones necesarias
-    instruction = ['10000100000000001101111010101101',
-                   '10000000000000001011111011101111',
-                   '10001100000000001101111010101101',
-                   '10001000000000001011111011101111',
-                   '10010100000000001101111010101101',
-                   '10010000000000001011111011101111',
-                   '10011100000000001101111010101101',
-                   '10011000000000001011111011101111',
-                   '01001001000000000000001000000000',
+    instruction = ['01001001000000000000001000000000',
                    '00000000000000000000000000000000',
                    '00000000000000000000000000000000',
                    '00000000000000000000000000000000',
@@ -57,14 +49,15 @@ if __name__ == "__main__":
 
     cpu.setInstructions(instruction)
 
-    if True:
+    while True:
+        pipe_stages, pipe_cycle, registers, memory = cpu.runCPU()
+        print(f"Pipeline Stages: {pipe_stages}")
+        print(f"Pipeline Cycle: {pipe_cycle}")
+        print(f"Registers: {registers}")
+        print(f"Memory: {memory}")
+        cpu.pipeline.vault.debug_print()
+        if all(stage is None for stage in pipe_stages.values()):
+            print("No more instructions to execute.")
+            break
 
-        while not cpu.is_empty:
-            pipe_stages, pipe_cycle, registers, memory = cpu.runCPU()
-            print(f"Pipeline Stages: {pipe_stages}")
-            print(f"Pipeline Cycle: {pipe_cycle}")
-            print(f"Registers: {registers}")
-            print(f"Memory: {memory}")
-        print("CPU execution completed.")
-
-    cpu.pipeline.vault.debug_print()
+    print("CPU execution completed.")

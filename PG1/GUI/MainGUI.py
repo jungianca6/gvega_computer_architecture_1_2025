@@ -21,10 +21,11 @@ class MainGUI:
         self.xSize = 1600
         self.ySize = 900
         # Inicialización de variables
-        self.registers = None
-        self.instructions = None
-        self.memory = None
         self.cpu = Cpu()
+        self.registers = self.cpu.register_file.getRegisters()
+        self.instructions = None
+        self.memory = self.cpu.data_memory.getMemory()
+
 
         # Ruta del archivo de ejecutable
         self.code_path = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/isa_code.txt")
@@ -84,7 +85,7 @@ class MainGUI:
 
         # Inicialización de registros y memoria
         # Marco de registros
-        self.reg_canvas = tk.Canvas(self.root_canvas, width=300, height=500, bg="#3B5998",
+        self.reg_canvas = tk.Canvas(self.root_canvas, width=350, height=500, bg="#3B5998",
                                     bd=0, highlightthickness=0)
         self.reg_canvas.place(x=(self.xSize / 2), y=350, anchor='nw')
         lb_reg = Label(self.root_canvas, text="Registers:", style_type="Subtitle")
@@ -93,20 +94,20 @@ class MainGUI:
         self.PlaceRegisterList()
 
         # Marco de memoria
-        self.memory_canvas = tk.Canvas(self.root_canvas, width=300, height=500, bg="#3B5998",
+        self.memory_canvas = tk.Canvas(self.root_canvas, width=350, height=500, bg="#3B5998",
                                   bd=0, highlightthickness=0)
-        self.memory_canvas.place(x=(self.xSize / 2) + 320, y=350, anchor='nw')
+        self.memory_canvas.place(x=(self.xSize / 2) + 370, y=350, anchor='nw')
         self.lb_memory = Label(self.root_canvas, text="Memory:", style_type="Subtitle")
-        self.lb_memory.place(x=(self.xSize / 2) + 320, y=350, anchor='sw')
+        self.lb_memory.place(x=(self.xSize / 2) + 370, y=350, anchor='sw')
         self.memoryFrame = None
         self.PlaceMemoryList()
 
         # Marco de estado del procesador
-        self.state_canvas = tk.Canvas(self.root_canvas, width=650, height=200, bg="#3B5998",
+        self.state_canvas = tk.Canvas(self.root_canvas, width=750, height=200, bg="#3B5998",
                                       bd=0, highlightthickness=0)
         self.state_canvas.place(x=(self.xSize / 2), y=100, anchor='nw')
         self.stateFrame = StateFrame(self.state_canvas, pipe_stages=None)
-        self.stateFrame.place(x=0, y=0, width=650, height=200, anchor='nw')
+        self.stateFrame.place(x=0, y=0, width=750, height=200, anchor='nw')
 
     def run(self):
         # Ejecutar la ventana principal
@@ -203,7 +204,7 @@ class MainGUI:
     def PlaceRegisterList(self):
         reg_scrollbar = tk.Scrollbar(self.root_canvas, orient="vertical",
                                      command=self.reg_canvas.yview)
-        reg_scrollbar.place(x=(self.xSize / 2) + 300, y=350, height=500, anchor='nw')
+        reg_scrollbar.place(x=(self.xSize / 2) + 350, y=350, height=500, anchor='nw')
         self.reg_canvas.configure(yscrollcommand=reg_scrollbar.set)
 
         reg_frame = tk.Frame(self.reg_canvas, bg="#1976D2")
@@ -220,7 +221,7 @@ class MainGUI:
     def PlaceMemoryList(self):
         memory_scrollbar = tk.Scrollbar(self.root_canvas, orient="vertical",
                                         command=self.memory_canvas.yview)
-        memory_scrollbar.place(x=(self.xSize / 2) + 620, y=350, height=500, anchor='nw')
+        memory_scrollbar.place(x=(self.xSize / 2) + 720, y=350, height=500, anchor='nw')
         self.memory_canvas.configure(yscrollcommand=memory_scrollbar.set)
 
         memory_frame = tk.Frame(self.memory_canvas, bg="#1976D2")

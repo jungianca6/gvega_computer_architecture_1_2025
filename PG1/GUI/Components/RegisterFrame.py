@@ -10,7 +10,7 @@ class RegisterFrame(tk.Frame):
         self.config(bg="#3B5998")
 
         for i, value in enumerate(self.registers):
-            label = Label(self, text=f"R{i}\t| {value}", style_type="List")
+            label = Label(self, text=f"R{i}\t| {hex(value)}", style_type="List")
             label.pack(fill="x", padx=5, pady=2)
             self.labels.append(label)
 

@@ -26,8 +26,15 @@ class StateFrame(tk.Frame):
         self.values_label.pack(fill="x", padx=2, pady=2)
 
     def _format_values(self):
+        def to_hex(val):
+            if val is None:
+                return "None"
+            if isinstance(val, int):
+                return f"0x{val:08X}"
+            return str(val)
+
         return " | ".join([
-            str(self.pipe_stages.get(stage, ""))
+            to_hex(self.pipe_stages.get(stage, ""))
             for stage in ["IF", "ID", "EX", "MEM", "WB"]
         ])
 

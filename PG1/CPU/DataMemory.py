@@ -1,7 +1,10 @@
 class DataMemory:
     def __init__(self):
-        self.memory = [0] * 128  # Cada posición representa 4 bytes, total 512 bytes
+        self.memory = [0] * 256  # Cada posición representa 4 bytes, total 512 bytes
         self.update_callback = None  # Callback para notificar cambios
+
+        self.memory[128] = 0x12345678  # Inicializar la dirección 128 a 0
+        self.memory[129] = 0x87654321  # Inicializar la dirección 128 a 0
 
     def set_update_callback(self, callback):
         """Asigna un callback para notificar actualizaciones en la memoria."""

@@ -58,9 +58,9 @@ class Pipeline:
             instruction = self.instruction_memory.fetch(self.pc.value)
             self.if_instr = instruction  # Guardar la instrucción para el debug
             if instruction is not None:
-                # print(f"Fetch: Instrucción {instruction:032b} en PC={self.pc.value}")
+                print(f"Fetch: Instrucción {instruction:032b} en PC={self.pc.value}")
                 self.if_id = {"instruction": instruction, "pc": self.pc.value, "instruction_pipeline": instruction}
-                # print(f"[DEBUG] PC en fetch: 0x{self.pc.value}")
+                print(f"[DEBUG] PC en fetch: 0x{self.pc.value}")
                 self.pc.increment()
 
         return self.if_instr
@@ -69,7 +69,7 @@ class Pipeline:
         self.id_instr = self.if_instr
         if self.if_id and self.id_ex is None:
             if self.if_id["instruction"] is None:  # Verificar si es un estado de flush
-                # print("Decode: Estado de flush detectado, no se procesa instrucción.")
+                print("Decode: Estado de flush detectado, no se procesa instrucción.")
                 self.if_id = None
                 return
 
@@ -77,7 +77,7 @@ class Pipeline:
             decoded = self.decoder.decode(instruction)
 
             if 'error' in decoded:
-                # print(f"Decode Error: {decoded['error']}")
+                print(f"Decode Error: {decoded['error']}")
                 self.if_id = None
                 return
 
@@ -93,7 +93,7 @@ class Pipeline:
             # Extraer señales de control como diccionario
             control_signals = self.extract_control_signals()
 
-            # print(f"Decode: PC={self.if_id['pc']}: Instrucción={instruction:032b} -> Decodificación={decoded}")
+            print(f"Decode: PC={self.if_id['pc']}: Instrucción={instruction:032b} -> Decodificación={decoded}")
 
             # Actualizar el registro del pipeline para la etapa id_ex
             self.id_ex = {"decoded": decoded,
@@ -115,7 +115,7 @@ class Pipeline:
             alu_result = 0  # Valor por defecto
 
             instruction_pipeline = self.id_ex["instruction_pipeline"]
-            # print(f"Control Signals en execute {signals}")
+            print(f"Control Signals en execute {signals}")
 
             # Leer registros (si existen)
             rs1_val = self.register_file.read(decoded["rs1"]) if "rs1" in decoded else 0
@@ -145,7 +145,7 @@ class Pipeline:
                     alu_result = 1 if rs1_val == rs2_val else 0
                     if alu_result == 1:  # Salto tomado
                         self.pc.set(decoded["imm"])
-                        # print(f"Branch Taken: PC <- {decoded['imm']}")
+                        print(f"Branch Taken: PC <- {decoded['imm']}")
 
             # Bóveda
             elif decoded["type"] == "VAULT":
@@ -243,7 +243,7 @@ class Pipeline:
             if self.mem_wb.get("control_signals", {}).get("RegWrite", 0) and "rd" in decoded:
                 data = self.mem_wb.get("memory_data", self.mem_wb.get("result", 0))
                 self.register_file.write(decoded["rd"], data)
-                # print(f"Writeback: {instr_str} → R{decoded['rd']} = {data}")
+                print(f"Writeback: {instr_str} → R{decoded['rd']} = {data}")
             self.mem_wb = None
 
         return self.wb_instr
@@ -300,6 +300,8 @@ class Pipeline:
             "MEM": memInstr,
             "WB": wbInstr
         }
+
+        self.vault.debug_print()
 
         return pipe_stages, self.clock_cycle
 
