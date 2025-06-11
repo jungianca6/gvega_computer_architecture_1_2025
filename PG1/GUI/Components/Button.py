@@ -12,5 +12,5 @@ class Button(tk.Button):
         if tooltip_text:
             self.tooltip = Tooltip(self, tooltip_text)
 
-    def set_text(self, text):
+    def SetText(self, text):
         self.config(text=text)

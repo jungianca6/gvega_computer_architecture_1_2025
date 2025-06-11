@@ -46,6 +46,11 @@ class DataMemory:
             for address in range(0, len(self.memory) * 4, 4):
                 self.update_callback(address, 0)
 
+        self.memory[0] = 0x12345678  # Inicializar la dirección 128 a 0
+        self.memory[1] = 0x87654321  # Inicializar la dirección 128 a 0
+        self.memory[4] = 0x12121212  # Inicializar la dirección 128 a 0
+        self.memory[5] = 0x34343434  # Inicializar la dirección 128 a 0
+
     def getMemory(self):
         """Devuelve una copia de la memoria."""
         return self.memory.copy()

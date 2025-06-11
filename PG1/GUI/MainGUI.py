@@ -25,7 +25,7 @@ class MainGUI:
         self.registers = self.cpu.register_file.getRegisters()
         self.instructions = None
         self.memory = self.cpu.data_memory.getMemory()
-
+        self.processor_running = False
 
         # Ruta del archivo de ejecutable
         self.code_path = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/isa_code.txt")
@@ -145,21 +145,29 @@ class MainGUI:
 
     def RunProcessorBtn(self):
         print("Running processor...")
-        self._run_processor_step()
+        if not self.processor_running:
+            self.processor_running = True
+            self.btn_run_processor.SetText("⏸")
+            self._run_processor_step()
+        else:
+            self.processor_running = False
+            self.btn_run_processor.SetText("▶▶")
 
     def _run_processor_step(self):
+        if not self.processor_running:
+            return
         pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
         self.lb_cycle.SetText(f"Cycle: {pipe_cycle}")
         if all(stage is None for stage in pipe_stages.values()):
             messagebox.showinfo("Finished", "No more instructions to execute.")
+            self.processor_running = False
+            self.btn_run_processor.SetText("▶▶")
             return
-        print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
         self.stateFrame.update_values(pipe_stages)
         self.registers = registers
         self.memory = memory
         self.memoryFrame.UpdateMemories(memory)
         self.registerFrame.UpdateRegisters(registers)
-        # Schedule next step after 1 second (1000 ms)
         self.root.after(500, self._run_processor_step)
 
     def UploadFile(self):
@@ -194,6 +202,8 @@ class MainGUI:
     def CompileFile(self):
         # Guarda y compila el archivo
         self.SaveFile()
+        self.cpu.resetCPU()
+        self.lb_cycle.SetText("Cycle: --")
         try:
             self.instructions = compilar(self.code_path)
             if self.instructions is not None:

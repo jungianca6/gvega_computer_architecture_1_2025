@@ -38,3 +38,10 @@ class Cpu:
         self.pipeline.vault.debug_print()
 
         return pipe_stages, pipe_cycle, self.register_file.getRegisters(), self.data_memory.getMemory()
+
+    def resetCPU(self):
+        self.pc.reset()
+        self.pipeline.clock_cycle = 0
+        self.instruction_memory.reset()
+        self.register_file.resetRegisters()
+        self.data_memory.resetDM()
