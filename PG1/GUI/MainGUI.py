@@ -60,12 +60,12 @@ class MainGUI:
         # Botón de ejecución por ciclo
         self.btn_run_cycle = Button(self.root_canvas, text="▶", command=self.RunCycleBtn,
                                     tooltip_text="Execute per Cycle")
-        self.btn_run_cycle.place(x=(self.xSize / 2), y=60, anchor='nw')
+        self.btn_run_cycle.place(x=680, y=60, anchor='ne')
 
         # Botón de ejecución del procesador
         self.btn_run_processor = Button(self.root_canvas, text="▶▶", command=self.RunProcessorBtn,
                                         tooltip_text="Execute Processor")
-        self.btn_run_processor.place(x=(self.xSize / 2) + 50, y=60, anchor='nw')
+        self.btn_run_processor.place(x=750, y=60, anchor='ne')
 
         # Botones de archivo
         # Botón de subir archivo
@@ -103,11 +103,16 @@ class MainGUI:
         self.PlaceMemoryList()
 
         # Marco de estado del procesador
-        self.state_canvas = tk.Canvas(self.root_canvas, width=750, height=200, bg="#3B5998",
+        self.state_canvas = tk.Canvas(self.root_canvas, width=750, height=100, bg="#3B5998",
                                       bd=0, highlightthickness=0)
-        self.state_canvas.place(x=(self.xSize / 2), y=100, anchor='nw')
+        self.state_canvas.place(x=(self.xSize / 2), y=200, anchor='nw')
+        self.lb_state = Label(self.root_canvas, text="State:", style_type="Subtitle")
+        self.lb_state.place(x=(self.xSize / 2), y=200, anchor='sw')
         self.stateFrame = StateFrame(self.state_canvas, pipe_stages=None)
         self.stateFrame.place(x=0, y=0, width=750, height=200, anchor='nw')
+
+        self.lb_cycle = Label(self.root_canvas, text="Cycle: --", style_type="Subtitle")
+        self.lb_cycle.place(x=(self.xSize / 2), y=100, anchor='nw')
 
     def run(self):
         # Ejecutar la ventana principal
@@ -125,6 +130,7 @@ class MainGUI:
         print("Running cycle...")
 
         pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
+        self.lb_cycle.SetText(f"Cycle: {pipe_cycle}")
         if all(stage is None for stage in pipe_stages.values()):
             messagebox.showinfo("Finished", "No more instructions to execute.")
             return None
@@ -143,6 +149,7 @@ class MainGUI:
 
     def _run_processor_step(self):
         pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
+        self.lb_cycle.SetText(f"Cycle: {pipe_cycle}")
         if all(stage is None for stage in pipe_stages.values()):
             messagebox.showinfo("Finished", "No more instructions to execute.")
             return
@@ -153,7 +160,7 @@ class MainGUI:
         self.memoryFrame.UpdateMemories(memory)
         self.registerFrame.UpdateRegisters(registers)
         # Schedule next step after 1 second (1000 ms)
-        self.root.after(1000, self._run_processor_step)
+        self.root.after(500, self._run_processor_step)
 
     def UploadFile(self):
         # Abrir un diálogo para seleccionar un archivo
@@ -227,7 +234,7 @@ class MainGUI:
         memory_frame = tk.Frame(self.memory_canvas, bg="#1976D2")
         self.memory_canvas.create_window((0, 0), window=memory_frame, anchor='nw')
 
-        self.memoryFrame = MemoryFrame(memory_frame)
+        self.memoryFrame = MemoryFrame(memory_frame, memory=self.memory)
         self.memoryFrame.pack(fill="x", expand=True)
 
         memory_frame.bind(

@@ -35,5 +35,6 @@ class Cpu:
 
     def runCPU(self):
         pipe_stages, pipe_cycle = self.pipeline.step()
+        self.pipeline.vault.debug_print()
 
         return pipe_stages, pipe_cycle, self.register_file.getRegisters(), self.data_memory.getMemory()
