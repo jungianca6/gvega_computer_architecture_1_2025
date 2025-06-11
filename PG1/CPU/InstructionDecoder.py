@@ -63,6 +63,7 @@ class InstructionDecoder:
                     return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "SHRI", "rd": rd, "rs1": rs1, "imm": imm}
                 else:
                     return {"opcode": tipo, "type": "Aritmetica (R-I)","name": "CMPI", "rd": rd, "rs1": rs1, "imm": imm}
+                #no lo dejes en else, has otro elif,. Que el else sea un no valido. En todo lo demas igual
 
 
         #Memoria

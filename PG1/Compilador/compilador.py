@@ -58,6 +58,12 @@ def insertar_nops_por_dependencias(instrucciones_limpias):
     instrucciones_finales = []
 
     for instr in instrucciones_limpias:
+            # Insertar NOPs después de branches (BEQ/BNE/BLT/BGT/JUMP)
+        if instr[0] in ('BEQ', 'BNE', 'BLT', 'BGT', 'JUMP'):
+            instrucciones_finales.append(instr)
+            instrucciones_finales.append(('NOP',))  # 1 NOP es suficiente en tu arquitectura
+            continue
+
         fuentes = set(get_fuentes(instr))
 
         nops_a_insertar = 0

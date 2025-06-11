@@ -10,14 +10,16 @@ _start:
 
 compere:
 	addi r1, r1, 1
-
 	cmpi r1, 5
 	beq finish
-
 	jump compere
-
 finish:
 	end
+
+
+
+
+
 
 
 
