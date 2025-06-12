@@ -4,11 +4,13 @@ _start:
 
 compare:
 	addi r1, r1, 1
-	cmpi r1, 5
+	cmpi r1, 3
 	beq finish
 	jump compare
 finish:
 	end
+
+
 
 
 
