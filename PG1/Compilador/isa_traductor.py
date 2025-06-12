@@ -128,7 +128,7 @@ def traducir_instrucciones_a_binario(asm_code):
                 if addr is None:
                     raise ValueError(f"Etiqueta '{target}' no encontrada en etiquetas")
 
-            bin_instr = opcode + operacion + bin_pad(addr, 26)
+            bin_instr = opcode + operacion + bin_pad(addr * 4, 26)
 
         elif tipo == 'vault_key':
             ks = registros[args[0]]
