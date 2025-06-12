@@ -11,4 +11,4 @@ _aritmetica:
 	xor3 r7, r3, r4, r4
 	shl r8, r1, #2
 	shr r8, r1, #2
-	cmp r1, r2 
+	cmp r1, r2

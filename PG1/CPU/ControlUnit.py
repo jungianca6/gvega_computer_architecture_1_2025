@@ -55,7 +55,7 @@ class ControlUnit:
 
         elif opcode == 0b100 or opcode == 0b101:
             # Instrucciones de bóveda → no tocan registros ni memoria normal
-            self.RegWrite = 0
+            self.RegWrite = 1 if opcode == 0b101 else 0
             self.MemRead = 0
             self.MemWrite = 0
             self.ALUOp = 0
