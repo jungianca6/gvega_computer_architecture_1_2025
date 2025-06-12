@@ -1,10 +1,16 @@
+import os
+from files.Txt import txt_to_mem, mem_to_txt
+
+
 class DataMemory:
     def __init__(self):
-        self.memory = [0] * 128  # Cada posición representa 4 bytes, total 512 bytes
+        self.memory = []
+        self.index = 0
+        self.size = None
+
         self.update_callback = None  # Callback para notificar cambios
 
-        self.memory[0] = 0x12121212  # Inicializar la dirección 128 a 0
-        self.memory[1] = 0x34343434  # Inicializar la dirección 128 a 0
+        self.resetDM(self.index)
 
     def set_update_callback(self, callback):
         """Asigna un callback para notificar actualizaciones en la memoria."""
@@ -37,15 +43,18 @@ class DataMemory:
             result.append((address, self.memory[i]))
         return result
 
-    def resetDM(self):
+    def resetDM(self, index=None):
         """Reinicia toda la memoria de datos a 0."""
-        self.memory = [0] * 128
+        mem_to_txt(self.index, self.memory)
+
+        self.memory = []
+        self.index = index
+        memory, size = txt_to_mem(self.index)
+        self.memory = memory
+        self.size = size
         if self.update_callback:
             for address in range(0, len(self.memory) * 4, 4):
                 self.update_callback(address, 0)
-
-        self.memory[0] = 0x12121212  # Inicializar la dirección 128 a 0
-        self.memory[1] = 0x34343434  # Inicializar la dirección 128 a 0
 
     def getMemory(self):
         """Devuelve una copia de la memoria."""

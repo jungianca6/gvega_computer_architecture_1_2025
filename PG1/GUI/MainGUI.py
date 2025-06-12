@@ -96,12 +96,18 @@ class MainGUI:
 
         # Marco de memoria
         self.memory_canvas = tk.Canvas(self.root_canvas, width=350, height=500, bg="#3B5998",
-                                  bd=0, highlightthickness=0)
+                                       bd=0, highlightthickness=0)
         self.memory_canvas.place(x=(self.xSize / 2) + 370, y=350, anchor='nw')
         self.lb_memory = Label(self.root_canvas, text="Memory:", style_type="Subtitle")
         self.lb_memory.place(x=(self.xSize / 2) + 370, y=350, anchor='sw')
         self.memoryFrame = None
         self.PlaceMemoryList()
+
+        self.btn_memory = Button(self.root_canvas, text="MEM", command=self.SetMemBlock,
+                                 tooltip_text="Charge Memory Block")
+        self.btn_memory.place(x=(self.xSize / 2) + 650, y=345, anchor='sw')
+        self.txt_mem = tk.Text(self.root_canvas, height=1, width=10, bg="#BBDEFB", font=("Arial", 12))
+        self.txt_mem.place(x=(self.xSize / 2) + 650, y=345, width=75, height=30, anchor='se')
 
         # Marco de estado del procesador
         self.state_canvas = tk.Canvas(self.root_canvas, width=750, height=100, bg="#3B5998",
@@ -116,13 +122,13 @@ class MainGUI:
         self.lb_cycle.place(x=(self.xSize / 2), y=100, anchor='nw')
 
         self.delay_options = {
-            "1 s":      1000,
-            "0,5 s":    500,
-            "0,1 s":    100,
-            "50 ms":    50,
-            "10 ms":    10,
-            "5 ms":     5,
-            "1 ms":     1
+            "1 s": 1000,
+            "0,5 s": 500,
+            "0,1 s": 100,
+            "50 ms": 50,
+            "10 ms": 10,
+            "5 ms": 5,
+            "1 ms": 1
         }
 
         self.cb_cycle = Combobox(
@@ -270,3 +276,17 @@ class MainGUI:
             lambda event: self.memory_canvas.configure(scrollregion=self.memory_canvas.bbox("all"))
         )
 
+    def SetMemBlock(self):
+        index = self.txt_mem.get("1.0", tk.END).strip()
+        if index.isdigit() and not self.processor_running:
+            if int(index) < self.cpu.data_memory.size:
+                index = int(index)
+                self.cpu.data_memory.resetDM(index)
+                self.memory = self.cpu.data_memory.getMemory()
+                self.memoryFrame.UpdateMemories(self.memory)
+                messagebox.showinfo("Memory Block", f"Memory block set to index {index}.")
+            else:
+                messagebox.showerror("Memory Block Error", f"Memory block set to index {index}.")
+        else:
+            messagebox.showerror("Error", "Invalid index. Please enter a valid number.")
+        return None

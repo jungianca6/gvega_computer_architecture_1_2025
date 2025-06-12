@@ -44,4 +44,4 @@ class Cpu:
         self.pipeline.clock_cycle = 0
         self.instruction_memory.reset()
         self.register_file.resetRegisters()
-        self.data_memory.resetDM()
+        # self.data_memory.resetDM()

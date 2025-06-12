@@ -6,9 +6,11 @@
 
 .section .text
 _start:
-	movi r10, 0		    @ v[n]
+	movi r10, 0	@ v[n]
+
+_cargar_v:
 	ldr r0, r10		    @ v0 = v[0]
-	ldr r1, r11, #4 	@ v1 = v[1]
+	ldr r1, r10, #4 	@ v1 = v[1]
 	
 	@ movi r3, 0x9e3779b9 	 Quemar DELTA a R3
 	
@@ -36,13 +38,19 @@ ronda:
 	
 	addi r2, r2, #1		@ i++
 	cmpi r2, #32		@ i < 32
-	beq cargar
-	
+	beq _guardar
+
 	jump ronda
-	
-cargar:
+
+_guardar:
 	str r0, r10		    @ v[0] = v0
 	str r1, r10, #4     @ v[1] = v1
-	
+
+	addi r10, r10, #8   @ v[] += 2
+	cmpi r10, #1024		@ v[] < 1024
+	beq _end
+
+	jump _cargar_v
+
+_end:
 	end
-	
