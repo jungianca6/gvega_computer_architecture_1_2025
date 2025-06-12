@@ -13,6 +13,8 @@ class Pipeline:
         self.control_unit = control_unit
         self.vault = Vault()
 
+        self.flags = {"zero": 0, "neg": 0}
+
         # Inicializar las etapas del pipeline como vacías
         self.fetch_stage = None
         self.decode_stage = None
@@ -125,7 +127,7 @@ class Pipeline:
             # Operaciones Aritméticas
             if "Aritmetica" in decoded["type"]:
                 imm = decoded.get("imm", 0)  # Inmediato ya extendido por el compilador
-                alu_result = self.alu.operate(
+                alu_result, self.flags = self.alu.operate(
                     rs1_val,
                     rs2_val if "(R-R)" in decoded["type"] else imm,  # Usa RS2 o inmediato
                     signals["ALUOp"],
@@ -135,17 +137,26 @@ class Pipeline:
             # Memoria
             elif decoded["type"] == "Memoria":
                 if "imm" in decoded:
-                    alu_result = decoded["imm"]  # Dirección directa
+                    alu_result, self.flags = decoded["imm"]  # Dirección directa
                 else:
-                    alu_result = self.alu.operate(rs1_val, 0, signals['ALUOp'])
+                    alu_result, self.flags = self.alu.operate(rs1_val, 0, signals['ALUOp'])
 
             # Saltos (BEQ, BNE, etc.)
             elif decoded["type"] == "Control":
                 if signals["Branch"]:
-                    alu_result = 1 if rs1_val == rs2_val else 0
-                    if alu_result == 1:  # Salto tomado
+                    if decoded["name"] == "BEQ" and self.flags.get("zero") == 1:  # Salto tomado
                         self.pc.set(decoded["imm"])
-                        # print(f"Branch Taken: PC <- {decoded['imm']}")
+                        print(f"BEQ Taken: PC <- {decoded['imm']}")
+                    elif decoded["name"] == "BNE" and self.flags.get("zero") == 0:  # Salto tomado
+                        self.pc.set(decoded["imm"])
+                    elif decoded["name"] == "BLT" and self.flags.get("neg") == 1:  # Salto tomado
+                        self.pc.set(decoded["imm"])
+                    elif decoded["name"] == "BGT" and self.flags.get("neg") == 0:  # Salto tomado
+                        self.pc.set(decoded["imm"])
+                elif signals["Jump"]:  # Salto incondicional
+                        self.pc.set(decoded["imm"])
+                        print(f"JUMP Taken: PC <- {decoded['imm']}")
+                    # print(f"Branch Taken: PC <- {decoded['imm']}")
 
             # Bóveda
             elif decoded["type"] == "VAULT":
@@ -174,11 +185,11 @@ class Pipeline:
 
                 # Realizar el shift
                 if decoded["name"] == "BSHL":
-                    alu_temp = self.alu.operate(rs1_val, shift_amount, 0b0110)  # SHRI
-                    alu_temp = self.alu.operate(alu_temp, key_value, 0b0001)  # ADD
+                    alu_temp, self.flags = self.alu.operate(rs1_val, shift_amount, 0b0110)  # SHRI
+                    alu_temp, self.flags = self.alu.operate(alu_temp, key_value, 0b0001)  # ADD
                 else:  # BSHR
-                    alu_temp = self.alu.operate(rs1_val, shift_amount, 0b0111)  # SHLI
-                    alu_temp = self.alu.operate(alu_temp, key_value, 0b0001)  # ADD
+                    alu_temp, self.flags = self.alu.operate(rs1_val, shift_amount, 0b0111)  # SHLI
+                    alu_temp, self.flags = self.alu.operate(alu_temp, key_value, 0b0001)  # ADD
 
                 alu_result = alu_temp
 
@@ -245,8 +256,9 @@ class Pipeline:
             # Solo escribe si RegWrite está activo y hay un registro destino
             if self.mem_wb.get("control_signals", {}).get("RegWrite", 0) and "rd" in decoded:
                 data = self.mem_wb.get("memory_data", self.mem_wb.get("result", 0))
-                self.register_file.write(decoded["rd"], data)
-                # print(f"Writeback: {instr_str} → R{decoded['rd']} = {data}")
+                if decoded["rd"] is not None:
+                    self.register_file.write(decoded["rd"], data)
+                    # print(f"Writeback: {instr_str} → R{decoded['rd']} = {data}")
             self.mem_wb = None
 
         return self.wb_instr
