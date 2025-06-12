@@ -1,0 +1,42 @@
+.section .text
+_start:
+	movi r1, 0
+	movi r4, 4
+	movi r5, 5
+
+compare:
+	addi r1, r1, 1
+	cmpi r1, 3
+	beq finish
+	jump compare
+
+finish:
+	muli r6, r4, 5
+	add r7, r4, r5
+	sub r8, r5, r4
+	end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

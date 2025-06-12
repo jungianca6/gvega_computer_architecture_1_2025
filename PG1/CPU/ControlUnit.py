@@ -42,7 +42,8 @@ class ControlUnit:
                 self.MemToReg = 1
             else:  # STR/STRI
                 self.MemWrite = 1
-            self.ALUSrc = 1 if instruction_name.endswith("I") else 0
+            self.ALUSrc = 1
+            self.ALUOp = 0b0001
 
         # Control (Saltos)
         elif opcode == 0b011:

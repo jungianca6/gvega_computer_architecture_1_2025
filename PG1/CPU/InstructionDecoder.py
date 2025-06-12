@@ -87,12 +87,12 @@ class InstructionDecoder:
                 if I == 0b1:
                     return {"opcode": tipo, "type": "Memoria", "name": "LDRI", "rd": rd, 'imm': imm}
                 else:
-                    return {"opcode": tipo, "type": "Memoria", "name": "LDR", "rd": rd, "rs1": rs1}
+                    return {"opcode": tipo, "type": "Memoria", "name": "LDR", "rd": rd, "rs1": rs1, 'imm': imm}
             else:
                 if I == 0b1:
                     return {"opcode": tipo, "type": "Memoria", "name": "STRI", "rd": rd, 'imm': imm}
                 else:
-                    return {"opcode": tipo, "type": "Memoria", "name": "STR", "rd": rd, "rs1": rs1}
+                    return {"opcode": tipo, "type": "Memoria", "name": "STR", "rd": rd, "rs1": rs1, 'imm': imm}
 
         #Control
         if tipo == 0b011:

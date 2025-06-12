@@ -14,4 +14,3 @@ _start:
 	stri r6, 24
 
     end
-
