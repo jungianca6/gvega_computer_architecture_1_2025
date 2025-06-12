@@ -134,8 +134,8 @@ class MainGUI:
         self.cb_cycle = Combobox(
             self.root_canvas,
             values=list(self.delay_options.keys()),
-            default="1 s")
-        self.cb_cycle.place(x=(self.xSize / 2 + 150), y=100, anchor='nw')
+            default="1 ms")
+        self.cb_cycle.place(x=(self.xSize / 2 + 200), y=100, anchor='nw')
 
     def run(self):
         # Ejecutar la ventana principal
@@ -288,5 +288,8 @@ class MainGUI:
             else:
                 messagebox.showerror("Memory Block Error", f"Memory block set to index {index}.")
         else:
-            messagebox.showerror("Error", "Invalid index. Please enter a valid number.")
+            if not index.isdigit():
+                messagebox.showerror("Error", "Invalid index. Please enter a valid number.")
+            elif self.processor_running:
+                messagebox.showerror("Error", "Cannot set memory block while the processor is running.")
         return None

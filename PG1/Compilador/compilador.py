@@ -114,7 +114,7 @@ def compilar_programa(secciones_lista):
                 direccion_actual += 2
 
     # 2. Asignar direcciones a .data
-    direccion_datos = 0x200
+    direccion_datos = 0x0000
 
     for item in data_section:
         if isinstance(item, tuple):
