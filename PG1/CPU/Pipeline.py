@@ -136,17 +136,17 @@ class Pipeline:
 
             # Memoria
             elif decoded["type"] == "Memoria":
-                if "imm" in decoded:
-                    alu_result, self.flags = decoded["imm"]  # Dirección directa
+                imm = decoded.get("imm", 0)  # Inmediato ya extendido por el compilador
+                if "rs1" in decoded:
+                    alu_result, self.flags = self.alu.operate(rs1_val, imm, signals['ALUOp'])  # RS + Inmediato
                 else:
-                    alu_result, self.flags = self.alu.operate(rs1_val, 0, signals['ALUOp'])
+                    alu_result, self.flags = self.alu.operate(imm, 0, signals['ALUOp'])  # Solo Inmediato
 
             # Saltos (BEQ, BNE, etc.)
             elif decoded["type"] == "Control":
                 if signals["Branch"]:
                     if decoded["name"] == "BEQ" and self.flags.get("zero") == 1:  # Salto tomado
                         self.pc.set(decoded["imm"])
-                        print(f"BEQ Taken: PC <- {decoded['imm']}")
                     elif decoded["name"] == "BNE" and self.flags.get("zero") == 0:  # Salto tomado
                         self.pc.set(decoded["imm"])
                     elif decoded["name"] == "BLT" and self.flags.get("neg") == 1:  # Salto tomado
@@ -155,7 +155,6 @@ class Pipeline:
                         self.pc.set(decoded["imm"])
                 elif signals["Jump"]:  # Salto incondicional
                         self.pc.set(decoded["imm"])
-                        print(f"JUMP Taken: PC <- {decoded['imm']}")
                     # print(f"Branch Taken: PC <- {decoded['imm']}")
 
             # Bóveda
@@ -216,18 +215,18 @@ class Pipeline:
             # Operaciones de Memoria (LDR/STR)
             if decoded["type"] == "Memoria":
                 if signals["MemRead"]:  # LDR/LDRI
-                    mem_data = self.data_memory.read(alu_result)
+                    mem_address = self.data_memory.read(alu_result)
                     self.mem_wb = {
-                        "memory_data": mem_data,
+                        "memory_data": mem_address,
                         "decoded": decoded,
                         "control_signals": signals,
-                        "result": mem_data,  # Para writeback
+                        "result": mem_address,  # Para writeback
                         "instruction_pipeline": instruction_pipeline
                     }
                     # print(f"Memory Read @ {alu_result}: {mem_data}")
 
                 elif signals["MemWrite"]:  # STR/STRI
-                    data = self.register_file.read(decoded["rs2"]) if "rs2" in decoded else 0
+                    data = self.register_file.read(decoded["rd"]) if "rd" in decoded else 0
                     self.data_memory.write(alu_result, data)
                     self.mem_wb = {"decoded": decoded,
                                    "control_signals": signals,

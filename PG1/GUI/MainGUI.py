@@ -168,7 +168,7 @@ class MainGUI:
         self.memory = memory
         self.memoryFrame.UpdateMemories(memory)
         self.registerFrame.UpdateRegisters(registers)
-        self.root.after(500, self._run_processor_step)
+        self.root.after(100, self._run_processor_step)
 
     def UploadFile(self):
         # Abrir un diálogo para seleccionar un archivo
