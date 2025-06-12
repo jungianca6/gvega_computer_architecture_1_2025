@@ -25,7 +25,7 @@ class DataMemory:
         """Escribe un bloque de 4 bytes en la dirección especificada."""
         index = address // 4  # Calcular la posición en el array
         if 0 <= index < len(self.memory):
-            self.memory[index] = data
+            self.memory[index] = data & 0xFFFFFFFF  # Aseguramos que el valor sea de 32 bits
             if self.update_callback:
                 self.update_callback(address, data)
         else:

@@ -6,15 +6,14 @@
 
 .section .text
 _start:
-	movi r10, 0		@ v[1]
-	movi r11, 4		@ v[0]
-	ldr r0, r10		@ v0 = v[0]
-	ldr r1, r11 	@ v1 = v[1]
+	movi r10, 0		    @ v[n]
+	ldr r0, r10		    @ v0 = v[0]
+	ldr r1, r11, #4 	@ v1 = v[1]
 	
 	@ movi r3, 0x9e3779b9 	 Quemar DELTA a R3
 	
 	movi r4, #0 		@ sum = 0
-	movi r2, #0		@ i = 0
+	movi r2, #0		    @ i = 0
 	
 	jump ronda
 	
@@ -42,8 +41,8 @@ ronda:
 	jump ronda
 	
 cargar:
-	str r0, r10		@ v[0] = v0
-	str r1, r11     @ v[1] = v1
+	str r0, r10		    @ v[0] = v0
+	str r1, r10, #4     @ v[1] = v1
 	
 	end
 	

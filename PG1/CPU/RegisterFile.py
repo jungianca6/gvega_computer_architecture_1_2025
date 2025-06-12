@@ -14,7 +14,7 @@ class RegisterFile:
         """
         Escribe un valor en un registro, excepto en el registro 0 que es de solo lectura.
         """
-        self.registers[reg_num] = value
+        self.registers[reg_num] = value & 0xFFFFFFFF  # Aseguramos que el valor sea de 32 bits
 
     def resetRegisters(self):
         """Reinicia todos los registros a 0, excepto los valores iniciales que se quieran mantener."""

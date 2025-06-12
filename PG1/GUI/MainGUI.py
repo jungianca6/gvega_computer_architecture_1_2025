@@ -9,6 +9,7 @@ from GUI.Components.TextEditor import TextEditor
 from GUI.Components.RegisterFrame import RegisterFrame
 from GUI.Components.MemoryFrame import MemoryFrame
 from GUI.Components.StateFrame import StateFrame
+from GUI.Components.Combobox import Combobox
 
 from Compilador.compilador import compilar
 
@@ -114,6 +115,17 @@ class MainGUI:
         self.lb_cycle = Label(self.root_canvas, text="Cycle: --", style_type="Subtitle")
         self.lb_cycle.place(x=(self.xSize / 2), y=100, anchor='nw')
 
+        self.delay_options = {
+            "1 s":      1000,
+            "0,5 s":    500,
+            "0,1 s":    100,
+            "50 ms":    50,
+            "10 ms":    10,
+        }
+
+        self.cb_cycle = Combobox(self.root_canvas, values=self.delay_options, default="1 s")
+        self.cb_cycle.place(x=(self.xSize / 2 + 150), y=100, anchor='nw')
+
     def run(self):
         # Ejecutar la ventana principal
         self.root.mainloop()
@@ -154,6 +166,7 @@ class MainGUI:
             self.btn_run_processor.SetText("▶▶")
 
     def _run_processor_step(self):
+        delay = self.delay_options[self.cb_cycle.get()]
         if not self.processor_running:
             return
         pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
@@ -168,7 +181,7 @@ class MainGUI:
         self.memory = memory
         self.memoryFrame.UpdateMemories(memory)
         self.registerFrame.UpdateRegisters(registers)
-        self.root.after(100, self._run_processor_step)
+        self.root.after(delay, self._run_processor_step)
 
     def UploadFile(self):
         # Abrir un diálogo para seleccionar un archivo
