@@ -19,7 +19,7 @@ class Combobox(ttk.Combobox):
 
         super().__init__(
             master,
-            values=list(values.keys()) if values else {},
+            values=values if values else {},
             style="TCombobox",
             font=tkfont.Font(family="Courier", size=16),
             state="readonly",  # para evitar escritura manual

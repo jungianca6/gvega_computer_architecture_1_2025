@@ -121,9 +121,14 @@ class MainGUI:
             "0,1 s":    100,
             "50 ms":    50,
             "10 ms":    10,
+            "5 ms":     5,
+            "1 ms":     1
         }
 
-        self.cb_cycle = Combobox(self.root_canvas, values=self.delay_options, default="1 s")
+        self.cb_cycle = Combobox(
+            self.root_canvas,
+            values=list(self.delay_options.keys()),
+            default="1 s")
         self.cb_cycle.place(x=(self.xSize / 2 + 150), y=100, anchor='nw')
 
     def run(self):
