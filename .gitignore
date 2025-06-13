@@ -1,0 +1,5 @@
+PG1/Compilador/parsetab.py
+PG1/Compilador/parser.out
+PG1/Compilador/__pycache__/lexer.cpython-39.pyc
+PG1/Compilador/__pycache__/parsetab.cpython-39.pyc
+*.pyc
