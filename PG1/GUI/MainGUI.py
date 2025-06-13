@@ -183,18 +183,19 @@ class MainGUI:
         if not self.processor_running:
             return
         pipe_stages, pipe_cycle, registers, memory = self.cpu.runCPU()
-        self.lb_cycle.SetText(f"Cycle: {pipe_cycle}")
         if all(stage is None for stage in pipe_stages.values()):
             messagebox.showinfo("Finished", "No more instructions to execute.")
+            self.lb_cycle.SetText(f"Cycle: {pipe_cycle}")
             self.processor_running = False
             self.btn_run_processor.SetText("▶▶")
+            self.stateFrame.update_values(pipe_stages)
+            self.registers = registers
+            self.memory = memory
+            self.memoryFrame.UpdateMemories(memory)
+            self.registerFrame.UpdateRegisters(registers)
             return
-        self.stateFrame.update_values(pipe_stages)
-        self.registers = registers
-        self.memory = memory
-        self.memoryFrame.UpdateMemories(memory)
-        self.registerFrame.UpdateRegisters(registers)
-        self._run_processor_step()
+
+        self.root.after(delay, self._run_processor_step)
 
     def UploadFile(self):
         # Abrir un diálogo para seleccionar un archivo

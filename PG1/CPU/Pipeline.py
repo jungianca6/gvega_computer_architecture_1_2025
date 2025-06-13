@@ -299,7 +299,7 @@ class Pipeline:
         }
 
     def step(self):
-        print(f"\nClock Cycle: {self.clock_cycle + 1}")
+        # print(f"\nClock Cycle: {self.clock_cycle + 1}")
         wbInstr = self.writeback()
         memInstr = self.memory()
         exInstr = self.execute()
