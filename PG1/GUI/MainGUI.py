@@ -14,6 +14,7 @@ from GUI.Components.Combobox import Combobox
 from Compilador.compilador import compilar
 
 from CPU.Cpu import Cpu
+import threading
 
 
 class MainGUI:
@@ -166,13 +167,13 @@ class MainGUI:
         self.memoryFrame.UpdateMemories(memory)
         self.registerFrame.UpdateRegisters(registers)
         return None
-
     def RunProcessorBtn(self):
         print("Running processor...")
         if not self.processor_running:
             self.processor_running = True
             self.btn_run_processor.SetText("⏸")
-            self._run_processor_step()
+            # Ejecutar el ciclo del procesador en un hilo aparte
+            threading.Thread(target=self._run_processor_step, daemon=True).start()
         else:
             self.processor_running = False
             self.btn_run_processor.SetText("▶▶")
