@@ -17,7 +17,7 @@ class Label(tk.Label):
         elif style_type == "List":
             self.config(font=("Arial", 16), bg="#3B5998", fg="white",
                         bd=2, relief="raised", padx=5, pady=5,
-                        width=20, anchor='w')
+                        width=25, anchor='w')
 
         else:  # "Text" por defecto
             self.config(font=("Arial", 12), fg="black", bg="#E3F2FD")

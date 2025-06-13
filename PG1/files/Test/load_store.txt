@@ -1,0 +1,16 @@
+.section .text
+_start:
+	movi r0, 0
+	ldr r1, r0
+	ldr r2, r0, 4
+
+	add r3, r1, r2
+	str r3, r0, 8
+
+	ldri r4, 16
+	ldri r5, 20
+
+	xor r6, r5, r4
+	stri r6, 24
+
+    end

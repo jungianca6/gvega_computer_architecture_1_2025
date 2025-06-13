@@ -1,0 +1,15 @@
+.section .vault
+	key: .word 0xdeadbeef
+
+.section .text
+_start:
+	movi r0, #0
+	ldr r1, r0
+	ldr r2, r0, #4
+
+_vault_test:
+	bshr r4, r1, k0, #4
+	bshl r5, r2, k0, #4
+
+	end
+

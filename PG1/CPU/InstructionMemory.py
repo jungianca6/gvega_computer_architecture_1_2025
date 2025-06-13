@@ -15,3 +15,6 @@ class InstructionMemory:
             return self.instructions[index]
         else:
             return None
+
+    def reset(self):
+        self.instructions = []

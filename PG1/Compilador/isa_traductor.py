@@ -9,8 +9,8 @@ opcodes = {
     'vault_shift': '101'
 }
 
-# Codificación de registros: R0-R12, K0-K3
-registros = {f'R{i}': format(i, '04b') for i in range(13)}
+# Codificación de registros: R0-R15, K0-K3
+registros = {f'R{i}': format(i, '04b') for i in range(16)}
 registros.update({f'K{i}': format(i, '02b') for i in range(4)})
 
 # Mapeo de instrucciones a (tipo, operación binaria, formato)
@@ -128,7 +128,7 @@ def traducir_instrucciones_a_binario(asm_code):
                 if addr is None:
                     raise ValueError(f"Etiqueta '{target}' no encontrada en etiquetas")
 
-            bin_instr = opcode + operacion + bin_pad(addr, 26)
+            bin_instr = opcode + operacion + bin_pad(addr * 4, 26)
 
         elif tipo == 'vault_key':
             ks = registros[args[0]]

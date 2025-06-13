@@ -1,61 +1,38 @@
+from dis import Instruction
 
-from ControlUnit import ControlUnit
-from InstructionDecoder import InstructionDecoder
-from RegisterFile import RegisterFile
-from ALU import ALU
-from InstructionMemory import InstructionMemory
-from ProgramCounter import ProgramCounter
-from Pipeline import Pipeline
-from DataMemory import DataMemory
+from CPU.Cpu import Cpu
 
 if __name__ == "__main__":
-    # Instancias necesarias
-    pc = ProgramCounter()
-    instruction_memory = InstructionMemory()
-    data_memory = DataMemory()  # Instancia de la memoria de datos
-    decoder = InstructionDecoder()
-    control_unit = ControlUnit()
-    register_file = RegisterFile()
-    alu = ALU()
-    RUN_PIPELINE = True  # Ejecuta el pipeline paso a paso
+    cpu = Cpu()
 
+    # Aquí puedes cargar instrucciones o realizar otras configuraciones necesarias
+    instruction = [
+        '10000100000000001101111010101101',  # BSTRH K0 57005
+        '10000000000000001011111011101111',  # BSTRL K0 48879
+        '00100001000000000000000000000000',  # MOVI R0 0
+        '00000000000000000000000000000000',  # NOP
+        '00000000000000000000000000000000',  # NOP
+        '00000000000000000000000000000000',  # NOP
+        '01000000100000000000000000000000',  # LDR R1 R0
+        '01000001000000000000000000000100',  # LDR R2 R0 4
+        '00000000000000000000000000000000',  # NOP
+        '00000000000000000000000000000000',  # NOP
+        '10110100000100000000000000000100',  # BSHR R4 R1 K0 4
+        '10100101001000000000000000000100',  # BSHL R5 R2 K0 4
+        '00010000000000000000000000000000'  # END
+    ]
 
-    # Crear el pipeline
-    pipeline = Pipeline(pc, instruction_memory, register_file, data_memory, alu, decoder, control_unit)
+    cpu.setInstructions(instruction)
 
-    # Instrucciones de prueba
-    instruction_memory.loadInstructions([
-        # BSTRH K0, 0xAAAA
-        (0b100 << 29) | (0b00 << 27) | (1 << 26) | (0 << 16) | 0xAAAA,
+    while True:
+        pipe_stages, pipe_cycle, registers, memory = cpu.runCPU()
+        print(f"Pipeline Stages: {pipe_stages}")
+        print(f"Pipeline Cycle: {pipe_cycle}")
+        print(f"Registers: {registers}")
+        print(f"Memory: {memory}")
+        cpu.pipeline.vault.debug_print()
+        if all(stage is None for stage in pipe_stages.values()):
+            print("No more instructions to execute.")
+            break
 
-        # BSTRL K0, 0x5555
-        (0b100 << 29) | (0b00 << 27) | (0 << 26) | (0 << 16) | 0x5555,
-
-        # BSHL K0, shift 4
-        (0b101 << 29) | (0b0 << 28) | (0 << 24) | (0 << 20) | (0b00 << 18) | (4 & 0x3FFFF),
-
-        # BSHR K0, shift 2
-        (0b101 << 29) | (0b1 << 28) | (0 << 24) | (0 << 20) | (0b00 << 18) | (2 & 0x3FFFF),
-
-        # BSTRH K1, 0xDEAD
-        (0b100 << 29) | (0b01 << 27) | (1 << 26) | (0 << 16) | 0xDEAD,
-
-        # BSTRL K1, 0xBEEF
-        (0b100 << 29) | (0b01 << 27) | (0 << 26) | (0 << 16) | 0xBEEF,
-
-        # BSHL K1, shift 8
-        (0b101 << 29) | (0b0 << 28) | (0 << 24) | (0 << 20) | (0b01 << 18) | (8 & 0x3FFFF),
-
-        # BSHR K1, shift 5
-        (0b101 << 29) | (0b1 << 28) | (0 << 24) | (0 << 20) | (0b01 << 18) | (5 & 0x3FFFF),
-    ])
-
-    if RUN_PIPELINE:
-        while not pipeline.is_pipeline_empty():
-            pipeline.step()
-
-        print("=== Simulación completada ===")  # <- solo para claridad
-
-    # Imprimir el estado final de la bóveda
-    pipeline.vault.debug_print()
-
+    print("CPU execution completed.")

@@ -1,0 +1,14 @@
+.section .text
+_start:
+	movi r1, 7
+	movi r2, 11
+
+_aritmetica:
+	add r3, r2, r1
+	sub r4, r2, r1
+	mul r5, r2, r1
+	xor r6, r2, r1
+	xor3 r7, r3, r4, r4
+	shl r8, r1, #2
+	shr r8, r1, #2
+	cmp r1, r2
