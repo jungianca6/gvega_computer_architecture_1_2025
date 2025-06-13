@@ -13,6 +13,11 @@ def file_to_txt(input_file):
             bloque = hex_string[i:i + 8]
             f_out.write(bloque + "\n")
 
+        total_lines = (len(hex_string) + 7) // 8
+        padding_needed = (256 - (total_lines % 256)) % 256
+        for _ in range(padding_needed):
+            f_out.write("00000000\n")
+
     return None
 
 
@@ -22,7 +27,7 @@ def txt_to_mem(i):
     with open(mem_txt, "r") as file:
         lines = file.readlines()
     total_lines = len(lines)
-    num_blocks = math.ceil(total_lines / 256)
+    num_blocks = total_lines // 256
     # Get the block starting at line i
     for line in lines[i:i+256]:
         hex_str = line.strip()
@@ -30,7 +35,6 @@ def txt_to_mem(i):
             valor = int(hex_str, 16)
             memoria.append(valor)
     return memoria, num_blocks
-
 
 def mem_to_txt(i, memoria):
     mem_txt = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/memory.txt")
@@ -48,5 +52,5 @@ def mem_to_txt(i, memoria):
         file.writelines(lines)
 
 
-# in_file = os.path.join(os.path.dirname(os.getcwd()), "TEA/jorge_luis.txt")
+# in_file = os.path.join(os.path.dirname(os.getcwd()), "TEA/tea_test.txt")
 # file_to_txt(in_file)
