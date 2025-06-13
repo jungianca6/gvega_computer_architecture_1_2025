@@ -21,36 +21,24 @@ def file_to_txt(input_file):
     return None
 
 
-def txt_to_mem(i):
+def txt_to_mem():
     memoria = []
     mem_txt = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/memory.txt")
     with open(mem_txt, "r") as file:
         lines = file.readlines()
-    total_lines = len(lines)
-    num_blocks = total_lines // 256
-    # Get the block starting at line i
-    for line in lines[i:i+256]:
+    for line in lines:
         hex_str = line.strip()
         if hex_str:
             valor = int(hex_str, 16)
             memoria.append(valor)
-    return memoria, num_blocks
+    return memoria
 
 
-def mem_to_txt(i, memoria):
+def mem_to_txt(memoria):
     mem_txt = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/memory.txt")
-    # Read all lines
-    with open(mem_txt, "r") as file:
-        lines = file.readlines()
-    # Update the block
-    for idx, val in enumerate(memoria):
-        if i + idx < len(lines):
-            lines[i + idx] = f"{val:08x}\n"
-        else:
-            lines.append(f"{val:08x}\n")
-    # Write back
     with open(mem_txt, "w") as file:
-        file.writelines(lines)
+        for val in memoria:
+            file.write(f"{val:08x}\n")
 
 
 if __name__ == "__main__":

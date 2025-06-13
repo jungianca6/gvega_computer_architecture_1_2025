@@ -130,7 +130,7 @@ class MainGUI:
             "10 ms": 10,
             "5 ms": 5,
             "1 ms": 1,
-            "0.1 ms": 0
+            "Minimum of time": 0
         }
 
         self.cb_cycle = Combobox(
@@ -194,6 +194,14 @@ class MainGUI:
             self.memoryFrame.UpdateMemories(memory)
             self.registerFrame.UpdateRegisters(registers)
             return
+
+        if pipe_cycle % 5000 == 0:
+            self.lb_cycle.SetText(f"Cycle: {pipe_cycle}")
+            self.stateFrame.update_values(pipe_stages)
+            self.registers = registers
+            self.memory = memory
+            self.memoryFrame.UpdateMemories(memory)
+            self.registerFrame.UpdateRegisters(registers)
 
         self.root.after(delay, self._run_processor_step)
 
@@ -282,11 +290,9 @@ class MainGUI:
     def SetMemBlock(self):
         index = self.txt_mem.get("1.0", tk.END).strip()
         if index.isdigit() and not self.processor_running:
-            if int(index) < self.cpu.data_memory.size:
+            if int(index) < self.cpu.data_memory.num_block:
                 index = int(index)
-                self.cpu.data_memory.resetDM(index)
-                self.memory = self.cpu.data_memory.getMemory()
-                self.memoryFrame.UpdateMemories(self.memory)
+                self.memoryFrame.UpdateMemories(self.memory, index)
                 messagebox.showinfo("Memory Block", f"Memory block set to index {index}.")
             else:
                 messagebox.showerror("Memory Block Error", f"Memory block set to index {index}.")

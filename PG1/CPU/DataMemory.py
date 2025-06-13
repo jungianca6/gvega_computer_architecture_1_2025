@@ -4,13 +4,13 @@ from files.Txt import txt_to_mem, mem_to_txt
 
 class DataMemory:
     def __init__(self):
-        self.memory = []
+        self.memory = txt_to_mem()  # Cargar memoria desde el archivo txt
         self.index = 0
-        self.size = None
+        self.num_block = len(self.memory) // 256  # Número de bloques en que se puede dividir la memoria
 
         self.update_callback = None  # Callback para notificar cambios
 
-        self.resetDM(self.index)
+        # self.resetDM(self.index)
 
     def set_update_callback(self, callback):
         """Asigna un callback para notificar actualizaciones en la memoria."""
@@ -45,13 +45,8 @@ class DataMemory:
 
     def resetDM(self, index=None):
         """Reinicia toda la memoria de datos a 0."""
-        mem_to_txt(self.index, self.memory)
+        mem_to_txt(self.memory)
 
-        self.memory = []
-        self.index = index
-        memory, size = txt_to_mem(self.index * 256)
-        self.memory = memory
-        self.size = size
         if self.update_callback:
             for address in range(0, len(self.memory) * 4, 4):
                 self.update_callback(address, 0)
