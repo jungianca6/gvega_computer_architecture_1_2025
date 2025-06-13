@@ -42,5 +42,5 @@ def mem_to_txt(memoria):
 
 
 if __name__ == "__main__":
-    in_file = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/jorge_luis.txt")
+    in_file = os.path.join(os.path.dirname(os.getcwd()), "files/jorge_luis.txt")
     file_to_txt(in_file)

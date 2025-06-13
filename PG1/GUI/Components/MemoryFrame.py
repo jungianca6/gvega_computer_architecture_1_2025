@@ -25,6 +25,6 @@ class MemoryFrame(tk.Frame):
             mem_index = self.index + i
             if mem_index < len(self.memories):
                 value = self.memories[mem_index]
-                self.labels[i].SetText(f"0x{mem_index*4:04X}| 0x{value:08X}")
+                self.labels[i].SetText(f"0x{mem_index*4:04X}\t| 0x{value:08X}")
             else:
                 self.labels[i].SetText("")

@@ -11,6 +11,9 @@ _start:
 _cargar_v:
 	ldr r0, r10		    @ v0 = v[0]
 	ldr r1, r11, #4 	@ v1 = v[1]
+
+	cmpi r0, #0		    @ v[0] == 0
+	beq _end            @ Final del archivo
 	
 	@ movi r3, 0x9e3779b9 	 Quemar DELTA a R3
 	
@@ -47,8 +50,6 @@ _guardar:
 	str r1, r10, #4     @ v[1] = v1
 
 	addi r10, r10, #8   @ v[] += 2
-	cmpi r10, #1024		@ v[] < 1024
-	beq _end
 
 	jump _cargar_v
 

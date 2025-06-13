@@ -104,7 +104,7 @@ class MainGUI:
         self.memoryFrame = None
         self.PlaceMemoryList()
 
-        self.btn_memory = Button(self.root_canvas, text="MEM", command=self.SetMemBlock,
+        self.btn_memory = Button(self.root_canvas, text="Mem_Block", command=self.SetMemBlock,
                                  tooltip_text="Charge Memory Block")
         self.btn_memory.place(x=(self.xSize / 2) + 650, y=345, anchor='sw')
         self.txt_mem = tk.Text(self.root_canvas, height=1, width=10, bg="#BBDEFB", font=("Arial", 12))
@@ -193,9 +193,11 @@ class MainGUI:
             self.memory = memory
             self.memoryFrame.UpdateMemories(memory)
             self.registerFrame.UpdateRegisters(registers)
+
+            self.SaveMemory()
             return
 
-        if pipe_cycle % 5000 == 0:
+        if pipe_cycle % 5000 == 0 and delay > 0:
             self.lb_cycle.SetText(f"Cycle: {pipe_cycle}")
             self.stateFrame.update_values(pipe_stages)
             self.registers = registers
@@ -289,16 +291,17 @@ class MainGUI:
 
     def SetMemBlock(self):
         index = self.txt_mem.get("1.0", tk.END).strip()
-        if index.isdigit() and not self.processor_running:
-            if int(index) < self.cpu.data_memory.num_block:
-                index = int(index)
-                self.memoryFrame.UpdateMemories(self.memory, index)
-                messagebox.showinfo("Memory Block", f"Memory block set to index {index}.")
-            else:
-                messagebox.showerror("Memory Block Error", f"Memory block set to index {index}.")
+        if index.isdigit() and int(index) < self.cpu.data_memory.num_block:
+            index = int(index)
+            self.memoryFrame.UpdateMemories(self.memory, index)
+            messagebox.showinfo("Memory Block", f"Memory block set to index {index}.")
         else:
             if not index.isdigit():
                 messagebox.showerror("Error", "Invalid index. Please enter a valid number.")
-            elif self.processor_running:
-                messagebox.showerror("Error", "Cannot set memory block while the processor is running.")
+            elif not int(index) < self.cpu.data_memory.num_block:
+                messagebox.showerror("Error", f"Index out of range. Please enter a number less than "
+                                              f"{self.cpu.data_memory.num_block - 1}.")
         return None
+
+    def SaveMemory(self):
+        self.cpu.data_memory.resetDM()
