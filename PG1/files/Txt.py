@@ -1,4 +1,4 @@
-import math
+import hashlib
 import os
 
 
@@ -18,7 +18,19 @@ def file_to_txt(input_file):
         for _ in range(padding_needed):
             f_out.write("00000000\n")
 
-    return None
+
+def txt_to_file(output_file):
+    input_file = os.path.join(os.path.dirname(os.getcwd()), "files/memory.txt")
+    with open(input_file, "r") as f_in:
+        hex_data = ""
+        for line in f_in:
+            hex_str = line.strip()
+            if hex_str and hex_str != "00000000":
+                hex_data += hex_str
+    # Convert hex string to bytes
+    bytes_data = bytes.fromhex(hex_data)
+    with open(output_file, "wb") as f_out:
+        f_out.write(bytes_data)
 
 
 def txt_to_mem():
@@ -41,6 +53,18 @@ def mem_to_txt(memoria):
             file.write(f"{val:08x}\n")
 
 
+def md5_of_memory_txt():
+    file_path = os.path.join(os.path.dirname(os.getcwd()), "files/memory.txt")
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
 if __name__ == "__main__":
     in_file = os.path.join(os.path.dirname(os.getcwd()), "files/jorge_luis.txt")
-    file_to_txt(in_file)
+    # file_to_txt(in_file)
+
+    # md5 =  md5_of_memory_txt()
+    # print(md5)
