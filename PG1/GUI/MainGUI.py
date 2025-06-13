@@ -128,7 +128,8 @@ class MainGUI:
             "50 ms": 50,
             "10 ms": 10,
             "5 ms": 5,
-            "1 ms": 1
+            "1 ms": 1,
+            "0.1 ms": 0
         }
 
         self.cb_cycle = Combobox(
@@ -158,7 +159,7 @@ class MainGUI:
             messagebox.showinfo("Finished", "No more instructions to execute.")
             return None
 
-        print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
+        # print(f"Pipeline Stages: {pipe_stages}, Cycle: {pipe_cycle}")
         self.stateFrame.update_values(pipe_stages)
         self.registers = registers
         self.memory = memory
@@ -192,7 +193,7 @@ class MainGUI:
         self.memory = memory
         self.memoryFrame.UpdateMemories(memory)
         self.registerFrame.UpdateRegisters(registers)
-        self.root.after(delay, self._run_processor_step)
+        self._run_processor_step()
 
     def UploadFile(self):
         # Abrir un diálogo para seleccionar un archivo

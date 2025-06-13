@@ -49,7 +49,7 @@ class DataMemory:
 
         self.memory = []
         self.index = index
-        memory, size = txt_to_mem(self.index)
+        memory, size = txt_to_mem(self.index * 256)
         self.memory = memory
         self.size = size
         if self.update_callback:

@@ -17,8 +17,6 @@ _cargar_v:
 	movi r4, #0 		@ sum = 0
 	movi r2, #0		    @ i = 0
 	
-	jump ronda
-	
 ronda:
 	add r4, r4, r3 		@ sum += DELTA
 	
