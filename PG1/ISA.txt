@@ -1,0 +1,75 @@
+//Registros:
+R0-R12              //(o más)
+K0-K3               //Keys de la boveda
+
+//ISA:
+
+// Instrucciones de Sistema: Opcode 000 [bits 31-29], Operation [bit 28], Null [bits 27-0]
+NOP         Operation 0
+END         Operation 1
+
+
+//Instrucciones de Aritmetica: Opcode 001 [bits 31-29], Operation [bits 28-25], Inmediato? [bit 24]
+
+//Parte 1, Registro a Registro                  RD [23-20], RS1 [19-16], RS2 [15-12], RS3 [11-8], Null [7-0]
+
+MOV R0, R1                                      Operation 0000
+ADD R0, R1, R2                                  Operation 0001
+SUB R0, R1, R2                                  Operation 0010
+MUL R0, R1, R2                                  Operation 0011
+XOR R0, R1, R2                                  Operation 0100
+XOR3 R0, R1, R2, R3                             Operation 0101 //XOR triple, funcion especifica para la ejecucion del programa
+SHL R0, R1, #Inmediato                          Operation 0110
+SHR R0, R1, #Inmediato                          Operation 0111
+CMP R0, R1                                      Operation 1000
+
+
+//Parte 2, Registro a Inmediato                 RD [23-20], RS1 [19-16], Inmediato [15-0]
+MOVI R0, #Inmediato                             Operation 0000
+ADDI R0, R1, #Inmediato                         Operation 0001
+SUBI R0, R1, #Inmediato                         Operation 0010
+MULI R0, R1, #Inmediato                         Operation 0011
+XORI R0, R1, #Inmediato                         Operation 0100
+SHLI R0, R1, #Inmediato                         Operation 0110
+SHRI R0, R1, #Inmediato                         Operation 0111
+CMPI R0, #Inmediato                             Operation 1000
+
+
+
+//Instrucciones de memoria: Opcode 010 [bits 31-29], Operation [bit 28], Inmediato? [bit 27], RD [26-23], RS1 [22-19], Inmediato [18-0] 
+
+LDR R0, R1                                      //Load (R1 + 0) -> R0           Operation 0, Inmediato 0        //Compilador pone el Inmediato 0 por defecto
+LDR R0, R1, #Inmediato                          //Load (R1 + Inmediato) -> R0   Operation 0, Inmediato 0
+LDRI R0, #inmediato                             //Load (Inmediato) -> R0        Operation 0, Inmediato 1
+
+STR R0, R1                                      //Store (R1 + 0) -> R0          Operation 1, Inmediato 0        //Compilador pone el Inmediato 0 por defecto
+STR R0, R1, #Inmediato                          //Store (R1 + Inmediato) -> R0  Operation 1, Inmediato 0
+STRI R0, #inmediato                             //Store (Inmediato) -> R0       Operation 1, Inmediato 1
+
+
+
+
+//Instrucciones de control: Opcode 011 [bits 31-29], Operation [bit 28:26], Inmediato [bits 25-0]
+
+
+//Branch, flags: Z, N, C, V                     //La etiquea es un inmediato, se puede usar un label
+BEQ Etiqueta                                    Operation 000
+BNE Etiqueta                                    Operation 001
+BLT Etiqueta                                    Operation 010
+BGT Etiqueta                                    Operation 011
+JUMP Etiqueta                                   Operation 110
+
+
+
+//Instrucciones de Boveda (Key): Opcode 100 [bits 31-29], KS [28:27], Operation H/L [bit 26], Null [bits 25-16], Inmediato [15-0]
+BSTRH K0, #Inmediato                            //BSTR Store Key en Boveda, 16 bits superiores          Operation 1
+BSTRL K0, #Inmediato                            //BSTR Store Key en Boveda, 16 bits inferiores          Operation 0
+
+
+
+//Instrucciones de la boveda (Shift): Opcode 101 [bits 31-29], Operation [bit 28], RD [27-24], RS1 [23-20], KS [19-16], Inmediato [17-0]
+
+BSHL R0, R1, K0, #Inmediato                     //SHL Boveda + Key               Operation 0
+BSHR R0, R1, K0, #Inmediato                     //SHR Boveda + Key               Operation 1
+
+
