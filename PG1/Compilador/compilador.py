@@ -65,7 +65,7 @@ def insertar_nops_por_dependencias(instrucciones_limpias):
 
         # --- Bóveda (Key Shifts) ---
         elif op in ('BSHL', 'BSHR'):
-            return [instr[1]]  # RS1
+            return [instr[2]]  # RS1 (registro fuente principal)
 
         # --- Branches y control ---
         elif op in ('BEQ', 'BNE', 'BLT', 'BGT'):
