@@ -168,13 +168,14 @@ class MainGUI:
         self.registerFrame.UpdateRegisters(registers)
         return None
     def RunProcessorBtn(self):
-        print("Running processor...")
         if not self.processor_running:
+            print("Running processor...")
             self.processor_running = True
             self.btn_run_processor.SetText("⏸")
             # Ejecutar el ciclo del procesador en un hilo aparte
             threading.Thread(target=self._run_processor_step, daemon=True).start()
         else:
+            print("Pausing processor...")
             self.processor_running = False
             self.btn_run_processor.SetText("▶▶")
 

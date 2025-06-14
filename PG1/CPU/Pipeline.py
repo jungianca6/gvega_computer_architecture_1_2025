@@ -184,10 +184,10 @@ class Pipeline:
 
                 # Realizar el shift
                 if decoded["name"] == "BSHL":
-                    alu_temp, self.flags = self.alu.operate(rs1_val, shift_amount, 0b0110)  # SHRI
+                    alu_temp, self.flags = self.alu.operate(rs1_val, shift_amount, 0b0110)  # SHLI
                     alu_temp, self.flags = self.alu.operate(alu_temp, key_value, 0b0001)  # ADD
                 else:  # BSHR
-                    alu_temp, self.flags = self.alu.operate(rs1_val, shift_amount, 0b0111)  # SHLI
+                    alu_temp, self.flags = self.alu.operate(rs1_val, shift_amount, 0b0111)  # SHRI
                     alu_temp, self.flags = self.alu.operate(alu_temp, key_value, 0b0001)  # ADD
 
                 alu_result = alu_temp
