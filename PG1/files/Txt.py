@@ -3,24 +3,32 @@ import os
 
 
 def file_to_txt(input_file):
-    output_file = os.path.join(os.path.dirname(os.getcwd()), "files/memory.txt")
+    output_file = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/memory.txt")
     with open(input_file, "rb") as f_in, open(output_file, "w") as f_out:
         bytes_leidos = f_in.read()
         # Convierte cada byte a 2 dígitos hexadecimales
         hex_string = bytes_leidos.hex()
+
+        # Rellenar con ceros al final si la longitud no es múltiplo de 8
+        if len(hex_string) % 8 != 0:
+            padding = 8 - (len(hex_string) % 8)
+            hex_string += '0' * padding
+
         # Guarda en el .txt en bloques de 8 (4 bytes) por línea
         for i in range(0, len(hex_string), 8):
             bloque = hex_string[i:i + 8]
             f_out.write(bloque + "\n")
 
-        total_lines = (len(hex_string) + 7) // 8
+        # Luego agregamos líneas de 00000000 para rellenar bloques de 256 palabras
+        total_lines = len(hex_string) // 8
         padding_needed = (256 - (total_lines % 256)) % 256
         for _ in range(padding_needed):
             f_out.write("00000000\n")
 
 
+
 def txt_to_file(output_file):
-    input_file = os.path.join(os.path.dirname(os.getcwd()), "files/memory.txt")
+    input_file = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/memory.txt")
     with open(input_file, "r") as f_in:
         hex_data = ""
         for line in f_in:
@@ -54,7 +62,7 @@ def mem_to_txt(memoria):
 
 
 def md5_of_memory_txt():
-    file_path = os.path.join(os.path.dirname(os.getcwd()), "files/memory.txt")
+    file_path = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/memory.txt")
     hash_md5 = hashlib.md5()
     with open(file_path, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
@@ -63,8 +71,10 @@ def md5_of_memory_txt():
 
 
 if __name__ == "__main__":
-    in_file = os.path.join(os.path.dirname(os.getcwd()), "files/jorge_luis.txt")
-    # file_to_txt(in_file)
+    in_file = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/jorge_luis.txt")
+    #in_file = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/encrypted_image.png")
+    print(f"Convirtiendo {in_file} a memory.txt...")
+    file_to_txt(in_file)
 
     # md5 =  md5_of_memory_txt()
     # print(md5)
