@@ -1,6 +1,6 @@
 import os
 
-def memory_to_file(input_path='files/memory.txt', output_path='output.bin'):
+def memory_to_file(input_path='files/memory.txt', output_path='Resultados/output.bin'):
     if not os.path.exists(input_path):
         print(f"El archivo '{input_path}' no existe.")
         return

@@ -1,5 +1,7 @@
 import hashlib
 import os
+import tkinter as tk
+from tkinter import filedialog
 
 
 def file_to_txt(input_file):
@@ -24,7 +26,6 @@ def file_to_txt(input_file):
         padding_needed = (256 - (total_lines % 256)) % 256
         for _ in range(padding_needed):
             f_out.write("00000000\n")
-
 
 
 def txt_to_file(output_file):
@@ -71,10 +72,19 @@ def md5_of_memory_txt():
 
 
 if __name__ == "__main__":
-    in_file = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/jorge_luis.txt")
-    #in_file = os.path.join(os.path.dirname(os.getcwd()), "PG1/files/encrypted_image.png")
-    print(f"Convirtiendo {in_file} a memory.txt...")
-    file_to_txt(in_file)
+    root = tk.Tk()
+    root.withdraw()  # Oculta la ventana principal
 
-    # md5 =  md5_of_memory_txt()
-    # print(md5)
+    print("Selecciona el archivo a convertir a memory.txt...")
+    in_file = filedialog.askopenfilename(
+        title="Selecciona el archivo de entrada",
+        filetypes=[("Todos los archivos", "*.*")]
+    )
+
+    if not in_file:
+        print("No se seleccionó ningún archivo. Saliendo.")
+    else:
+        print(f"Convirtiendo {in_file} a memory.txt...")
+        file_to_txt(in_file)
+        
+        

@@ -3,3 +3,6 @@ PG1/Compilador/parser.out
 PG1/Compilador/__pycache__/lexer.cpython-39.pyc
 PG1/Compilador/__pycache__/parsetab.cpython-39.pyc
 *.pyc
+PG1/files/isa_code.txt
+PG1/Compilador/compilacion_sin_binario.txt
+PG1/Compilador/mem_instructions.txt
