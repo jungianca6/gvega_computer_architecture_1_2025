@@ -1,10 +1,56 @@
+.section .data @ tea_encrypt
+	v: .word 2			@ unint32_t v[2]
+
+.section .vault
+	key: .word 0xdeadbeef, 0xdeadbeef, 0xdeadbeef, 0xdeadbeef	@ unint32_t key[4]
+
 .section .text
 _start:
-	movi r0, #5
-	movi r1, #10
+	movi r10, #0	@ v[n]
 
-	sub r2, r1, r0
-	sub r3, r0, r1
+_cargar_v:
+	ldr r0, r10		    @ v0 = v[0]
+	ldr r1, r10, #4 	@ v1 = v[1]
+	
+	cmpi r0, #0		    @ v[0] == 0
+	beq _end            @ Final del archivo
 
+	@ movi r3, 0x9e3779b9 	 Quemar DELTA a R3
 
+	movi r4, #0 		@ sum = 0
+	movi r2, #0		    @ i = 0
+
+_ronda:
+	add r4, r4, r3 		@ sum += DELTA
+
+	bshl r6, r1, k0, #4 	@ r6 = (v1 << 4) + key[0]
+	add r7, r1, r4		    @ r7 = (v1 + sum)
+	bshr r8, r1, k1, #5 	@ r8 = (v1 >> 5) + key[1]
+	xor3 r9, r6, r7, r8	    @ r9 = r6 ^ r7 ^ r8
+
+	add r0, r0, r9		@ v0 += r9
+
+	bshl r6, r0, k2, #4	    @ r6 = (v0 << 4) + key[2]
+	add r7, r0, r4		    @ r7 = (v0 + sum)
+	bshr r8, r0, k3, #5 	@ r8 = (v0 >> 5) + key[3]
+	xor3 r9, r6, r7, r8	    @ r9 = r6 ^ r7 ^ r8
+
+	add r1, r1, r9		@ v1 += r9
+
+	addi r2, r2, #1		@ i++
+	cmpi r2, #32		@ i = 32
+	beq _guardar
+
+	jump _ronda
+
+_guardar:
+	str r0, r10		    @ v[0] = v0
+	str r1, r10, #4     @ v[1] = v1
+
+	addi r10, r10, #8   @ v[] += 2
+
+	jump _cargar_v
+
+_end:
+	end
 

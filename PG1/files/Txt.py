@@ -64,7 +64,7 @@ def md5_of_memory_txt():
 
 if __name__ == "__main__":
     in_file = os.path.join(os.path.dirname(os.getcwd()), "files/jorge_luis.txt")
-    # file_to_txt(in_file)
+    file_to_txt(in_file)
 
     # md5 =  md5_of_memory_txt()
     # print(md5)
