@@ -8,6 +8,7 @@ from Compilador.isa_traductor import traducir_instrucciones_a_binario
 
 # Insertar NOPs por dependencias
 def insertar_nops_por_dependencias(instrucciones_limpias):
+    print("Instrucciones limpias:", instrucciones_limpias)
     def get_destinos(instr):
         op = instr[0]
 
@@ -35,24 +36,52 @@ def insertar_nops_por_dependencias(instrucciones_limpias):
 
     def get_fuentes(instr):
         op = instr[0]
-        if op in ('ADD', 'ADDI', 'BSHL', 'BSHR', 'XOR3'):
-            return instr[2:]  # Lee los operandos fuente (registros)
-        elif op == 'STR':
-            return [instr[1], instr[2]] if len(instr) == 3 else [instr[1]]  # R0 y R1
-        elif op == 'STRI':
-            return [instr[1]]  # R0
+
+        # --- Aritméticas Reg-Registro ---
+        if op in ('ADD', 'SUB', 'MUL', 'XOR'):
+            return [instr[2], instr[3]]  # RS1, RS2
+        elif op == 'XOR3':
+            return [instr[2], instr[3], instr[4]]  # RS1, RS2, RS3
+        elif op in ('SHL', 'SHR', 'CMP'):
+            return [instr[1], instr[2]]  # RD (o comparado), RS1
+        elif op == 'MOV':
+            return [instr[2]]  # RS1
+
+        # --- Aritméticas Reg-Inmediato ---
+        elif op in ('ADDI', 'SUBI', 'MULI', 'XORI', 'SHLI', 'SHRI'):
+            return [instr[2]]  # RS1
+        elif op == 'MOVI':
+            return []  # Solo inmediato, no fuente de registro
         elif op == 'CMPI':
-            return [instr[1]]  # Solo el registro comparado
-        elif op == 'CMP':
-            return [instr[1], instr[2]]  # Comparación entre dos registros
-        elif op == 'LDR':
-            return [instr[2]]  # Dirección base
-        elif op == 'BEQ':
-            return [instr[1]]  # Condición (ej. R9)
-        elif op == 'JUMP':
-            return []  # Solo salta, sin leer registros
+            return [instr[1]]  # Registro comparado
+
+        # --- Memoria ---
+        elif op in ('LDR', 'STR'):
+            return [instr[2]] if len(instr) == 3 else [instr[1]]  # Base address RS1
         elif op == 'LDRI':
-            return []  # Usa inmediato, no lee registros
+            return []  # Solo inmediato
+        elif op == 'STRI':
+            return [instr[1]]  # R0 es la fuente
+
+        # --- Bóveda (Key Shifts) ---
+        elif op in ('BSHL', 'BSHR'):
+            return [instr[1]]  # RS1
+
+        # --- Branches y control ---
+        elif op in ('BEQ', 'BNE', 'BLT', 'BGT'):
+            return [instr[1]]  # Condición (Z, etc.)
+        elif op == 'JUMP':
+            return []  # Solo inmediato
+
+        # --- Bóveda (Key Store) ---
+        elif op in ('BSTRH', 'BSTRL'):
+            return []  # Solo inmediato
+
+        # --- NOP y END ---
+        elif op in ('NOP', 'END'):
+            return []
+
+        # Por defecto
         return []
 
     instrucciones_finales = []
@@ -84,7 +113,7 @@ def insertar_nops_por_dependencias(instrucciones_limpias):
             instrucciones_finales.append(('NOP',))
 
         instrucciones_finales.append(instr)
-
+    print("Instrucciones finales:", instrucciones_finales)
     return instrucciones_finales
 
 
