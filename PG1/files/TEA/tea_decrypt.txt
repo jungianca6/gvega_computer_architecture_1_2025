@@ -10,7 +10,7 @@ _start:
 
 _cargar_v:
 	ldr r0, r10		    @ v0 = v[0]
-	ldr r1, r11, #4 	@ v1 = v[1]
+	ldr r1, r10, #4 	@ v1 = v[1]
 
 	cmpi r0, #0		    @ v[0] == 0
 	beq _end            @ Final del archivo
@@ -24,14 +24,14 @@ _cargar_v:
 	
 ronda:
 	bshl r6, r0, k2, #4	@ r6 = (v0 << 4) + key[2]
-	add r7, r0, r3		@ r7 = (v0 + sum)
+	add r7, r0, r4		@ r7 = (v0 + sum)
 	bshr r8, r0, k3, #5	@ r8 = (v0 >> 5) + key[3]
 	xor3 r9, r6, r7, r8 	@ r9 = r6 ^ r7 ^ r8
 	
 	sub r1, r1, r9		@ v1 -= r9
 	
 	bshl r6, r1, k0, #4 	@ r6 = (v1 << 4) + key[0]
-	add r7, r1, r3		@ r7 = (v1 + sum)
+	add r7, r1, r4		@ r7 = (v1 + sum)
 	bshr r8, r1, k1, #5	@ r8 = (v1 >> 5) + key [1]
 	xor3 r9, r6, r7, r8 	@ r9 = r6 ^ r7 ^ r8
 	
